@@ -1,0 +1,11 @@
+# Base de datos local
+farmacia.db
+
+# Archivos de caché de Python
+__pycache__/
+*.pyc
+
+# Dependencias de Python (si usas un entorno virtual)
+venv/
+.env
+.idea/

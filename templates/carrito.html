@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Mi Carrito | Farmacia MedCare{% endblock %}
+
+{% block content %}
+    <div class="page-container" style="max-width: 1000px;">
+        <h1 class="section-title" style="font-size: 32px; margin-bottom: 20px;">
+            🛒 {{ page_name }}
+        </h1>
+
+        <div class="carrito-layout">
+            
+            <div class="lista-productos">
+                
+                {% for item in carrito.productos %}
+                <div class="carrito-item">
+                    <div class="item-imagen">IMAGEN</div>
+                    <div class="item-detalles">
+                        <h4 style="margin: 0;">{{ item.nombre }}</h4>
+                        <p style="margin: 5px 0 0 0; font-size: 14px;">Cantidad: {{ item.cantidad }}</p>
+                    </div>
+                    <div class="item-precio">
+                        ${{ (item.precio * item.cantidad) | round(2) }}
+                    </div>
+                </div>
+                {% endfor %}
+
+                <p style="text-align: left; margin-top: 20px; font-size: 14px; color: var(--color-azul-oscuro);">
+                    Actualmente, tu carrito tiene {{ resumen.item_count }} productos.
+                </p>
+            </div>
+
+
+            <div class="resumen-pago">
+                <h3 class="section-title" style="font-size: 20px; margin-bottom: 15px; border-bottom: 1px solid #ccc; padding-bottom: 10px;">
+                    Resumen del Pedido
+                </h3>
+
+                <div class="detalle-row">
+                    <span>Subtotal:</span>
+                    <span>${{ resumen.subtotal | round(2) }}</span>
+                </div>
+
+                <div class="detalle-row">
+                    <span>Envío Estimado:</span>
+                    <span>${{ resumen.envio | round(2) }}</span>
+                </div>
+                
+                <hr style="border: none; border-top: 1px solid #ddd; margin: 15px 0;">
+
+                <div class="detalle-row total-row">
+                    <span style="font-size: 18px;">TOTAL A PAGAR:</span>
+                    <span style="font-size: 18px; color: var(--color-rojo-coral);">${{ resumen.total | round(2) }}</span>
+                </div>
+
+                <button class="btn-add" style="width: 100%; height: 50px; font-size: 16px; margin-top: 20px;" 
+                        onclick="alert('Procediendo al pago de ${{ resumen.total | round(2) }}')">
+                    PROCEDER AL PAGO
+                </button>
+            </div>
+        </div>
+    </div>
+{% endblock %}

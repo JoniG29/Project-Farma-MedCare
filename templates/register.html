@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Registrarse | Farmacia MedCare{% endblock %}
+
+{% block content %}
+    <div class="page-container" style="max-width: 450px; min-height: 70vh; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+        <h1 class="section-title" style="font-size: 30px; margin-bottom: 10px;">
+            Crear Nueva Cuenta
+        </h1>
+        <p style="margin-bottom: 20px; font-size: 14px; color: #666;">
+            Los campos marcados con (*) son obligatorios.
+        </p>
+
+        {% if error %}
+        <div style="background-color: #fdd; color: var(--color-rojo-coral); border: 1px solid var(--color-rojo-coral); padding: 10px; border-radius: 5px; margin-bottom: 20px; width: 100%; text-align: left;">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <form method="POST" action="{{ url_for('register') }}" style="width: 100%; display: flex; flex-direction: column; gap: 10px;">
+
+            <input type="text" name="username" placeholder="Nombre de Usuario (*)" required
+                   style="padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px;">
+
+            <input type="text" name="full_name" placeholder="Nombre Completo (*)" required
+                   style="padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px;">
+
+            <input type="email" name="email" placeholder="Correo Electrónico (*)" required
+                   style="padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px;">
+
+            <input type="text" name="address" placeholder="Dirección de Envío (Opcional)"
+                   style="padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px;">
+
+            <input type="tel" name="phone_number" placeholder="Teléfono (Opcional)"
+                   style="padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px;">
+
+            <div style="position: relative;">
+                <input type="password" name="password" id="password_field" placeholder="Contraseña (*)" required
+                       style="padding: 12px 40px 12px 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; width: 100%; box-sizing: border-box;">
+                <span id="toggle_password" onclick="toggleVisibility('password_field', 'toggle_password')"
+                      style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #888;">
+                    👁️
+                </span>
+            </div>
+
+            <div style="position: relative;">
+                <input type="password" name="confirm_password" id="confirm_password_field" placeholder="Confirmar Contraseña (*)" required
+                       style="padding: 12px 40px 12px 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; width: 100%; box-sizing: border-box;">
+                <span id="toggle_confirm" onclick="toggleVisibility('confirm_password_field', 'toggle_confirm')"
+                      style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #888;">
+                    👁️
+                </span>
+            </div>
+
+            <p style="font-size: 12px; color: #666; margin: 0; text-align: left;">
+                La contraseña debe tener 8 caracteres, Mayús, minús, número y símbolo (@$!%*?&).
+            </p>
+
+            <button type="submit" class="btn-add"
+                    style="width: 100%; height: 45px; margin-top: 15px; background-color: var(--color-verde-menta); color: var(--color-azul-oscuro); border: none;">
+                Registrar
+            </button>
+        </form>
+
+        <p style="margin-top: 30px;">
+            ¿Ya tienes cuenta? <a href="{{ url_for('login') }}" style="color: var(--color-rojo-coral); font-weight: bold;">Inicia Sesión</a>.
+        </p>
+    </div>
+
+    <script>
+        /**
+         * Alterna la visibilidad de un campo de contraseña al hacer clic en el ícono.
+         * @param {string} fieldId - El ID del campo input (e.g., 'password_field').
+         * @param {string} iconId - El ID del span del ícono (e.g., 'toggle_password').
+         */
+        function toggleVisibility(fieldId, iconId) {
+            const passwordField = document.getElementById(fieldId);
+            const toggleIcon = document.getElementById(iconId);
+
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                toggleIcon.textContent = '🔒'; // Ocultar
+            } else {
+                passwordField.type = 'password';
+                toggleIcon.textContent = '👁️'; // Mostrar
+            }
+        }
+    </script>
+{% endblock %}

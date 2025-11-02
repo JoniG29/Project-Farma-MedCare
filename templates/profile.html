@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Mi Cuenta | Farmacia MedCare{% endblock %}
+
+{% block content %}
+    <div class="page-container" style="max-width: 900px;">
+        <h1 class="section-title" style="font-size: 36px; margin-bottom: 10px;">
+            Bienvenido, {{ username | upper }}
+        </h1>
+        <p class="description-label" style="font-size: 18px; margin-bottom: 50px;">
+            Este es tu centro de gestión de cuenta.
+        </p>
+
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px;">
+
+            <a href="#" class="profile-card" onclick="alert('Funcionalidad en desarrollo.')" style="text-decoration: none;">
+                <div class="card-icon" style="font-size: 30px; margin-bottom: 15px;">🔒</div>
+                <h3 class="section-title" style="font-size: 18px;">Información Personal</h3>
+                <p>Gestiona tu nombre, correo y contraseña.</p>
+            </a>
+
+            <a href="#" class="profile-card" onclick="alert('Funcionalidad en desarrollo.')" style="text-decoration: none;">
+                <div class="card-icon" style="font-size: 30px; margin-bottom: 15px;">📦</div>
+                <h3 class="section-title" style="font-size: 18px;">Historial de Pedidos</h3>
+                <p>Revisa tus compras anteriores y el estado actual.</p>
+            </a>
+            
+            <a href="#" class="profile-card" onclick="alert('Funcionalidad en desarrollo.')" style="text-decoration: none;">
+                <div class="card-icon" style="font-size: 30px; margin-bottom: 15px;">📍</div>
+                <h3 class="section-title" style="font-size: 18px;">Direcciones de Envío</h3>
+                <p>Guarda y gestiona tus ubicaciones favoritas.</p>
+            </a>
+            
+        </div>
+        
+        <a href="{{ url_for('logout') }}" class="btn-add" 
+           style="display: inline-block; margin-top: 50px; padding: 12px 30px; background-color: var(--color-rojo-coral); text-decoration: none; font-size: 16px;">
+           CERRAR SESIÓN ({{ username }})
+        </a>
+        
+    </div>
+
+    <style>
+        .profile-card {
+            background-color: var(--color-gris-calido);
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            border: 1px solid #ddd;
+            transition: all 0.2s;
+            display: block;
+            color: var(--color-azul-oscuro); /* Asegurar que el texto sea visible */
+        }
+        .profile-card:hover {
+            border-color: var(--color-azul-oscuro);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .profile-card p {
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+{% endblock %}

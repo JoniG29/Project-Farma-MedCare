@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }} | Farmacia MedCare{% endblock %}
+
+{% block content %}
+    <div class="page-container">
+        
+        <h1 class="section-title">
+            {{ page_title | upper }}
+        </h1>
+        
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 30px; margin-top: 20px; text-align: left;">
+            
+            {% for sub_cat in sub_categories %}
+            <div class="category-grid-item" onclick="alert('Navegar a la sección: {{ sub_cat }}')">
+                 
+                <h3>{{ sub_cat }}</h3>
+                <p>Explorar productos y consejos.</p>
+            </div>
+            {% endfor %}
+            
+        </div>
+        
+        <div style="margin-top: 50px;">
+            <p style="font-size: 14px; color: #999;">Esta es una página generada dinámicamente.</p>
+        </div>
+
+    </div>
+{% endblock %}

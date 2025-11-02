@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Iniciar Sesión | Farmacia MedCare{% endblock %}
+
+{% block content %}
+    <div class="page-container" style="max-width: 450px; min-height: 70vh; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+        <h1 class="section-title" style="font-size: 30px; margin-bottom: 30px;">
+            Iniciar Sesión
+        </h1>
+
+        {% if error %}
+        <div style="background-color: #fdd; color: var(--color-rojo-coral); border: 1px solid var(--color-rojo-coral); padding: 10px; border-radius: 5px; margin-bottom: 20px; width: 100%; text-align: left;">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <form method="POST" action="{{ url_for('login') }}" style="width: 100%; display: flex; flex-direction: column; gap: 15px;">
+            <input type="text" name="username" placeholder="Nombre de Usuario" required
+                   style="padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px;">
+
+            <input type="password" name="password" placeholder="Contraseña" required
+                   style="padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px;">
+
+            <p style="text-align: right; margin-top: -5px; margin-bottom: 15px;">
+                <a href="{{ url_for('forgot_password') }}" style="color: var(--color-rojo-coral); font-size: 14px;">¿Olvidaste tu contraseña?</a>
+            </p>
+
+            <button type="submit" class="btn-add"
+                    style="width: 100%; height: 45px; background-color: var(--color-azul-oscuro);">
+                Ingresar
+            </button>
+        </form>
+
+        <p style="margin-top: 30px;">
+            ¿No tienes cuenta? <a href="{{ url_for('register') }}" style="color: var(--color-rojo-coral); font-weight: bold;">Regístrate aquí</a>.
+        </p>
+    </div>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Antibióticos | Farmacia MedCare{% endblock %}
+
+{% block content %}
+    <div class="page-container">
+        <h1 class="section-title">PRODUCTOS EN ANTIBIÓTICOS</h1>
+        <p class="description-label">Encuentra tratamientos recetados y de venta libre.</p>
+
+        <div class="products-grid">
+            {% for prod in productos_antibioticos %}
+            <div class="product-card" style="width: 280px; height: 330px;">
+                <div class="product-card-image">
+                    {{ prod.imagen_placeholder }} 
+                </div>
+                <h3>{{ prod.nombre }}</h3>
+                <p class="price">${{ prod.precio }}</p>
+                <button class="btn-add">Añadir al carrito</button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

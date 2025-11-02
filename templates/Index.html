@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Inicio | Farmacia MedCare{% endblock %}
+
+{% block content %}
+    <section class="banner">
+        <h1>Cuidando tu Bienestar, Siempre.</h1>
+        <p>Encuentra todo lo que necesitas para tu salud y la de tu familia.</p>
+    </section>
+
+    <section class="page-container" style="text-align: center;">
+        <h2 class="section-title">NUESTROS PRODUCTOS DESTACADOS</h2>
+        <div class="products-grid">
+            {% for prod in productos %}
+            <div class="product-card" style="width: 330px; height: 330px;">
+                <div class="product-card-image">IMAGEN</div>
+                <h3>{{ prod.nombre }}</h3>
+                <p class="price">${{ prod.precio }}</p>
+                <button class="btn-add">Añadir al carrito</button>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section style="background-color: var(--color-blanco); padding: 40px 0; text-align: center;">
+        <h2 class="section-title" style="font-size: 24px;">EXPLORA NUESTRAS CATEGORÍAS PRINCIPALES</h2>
+        <div style="display: grid; grid-template-columns: repeat(3, 380px); justify-content: center; gap: 25px; margin-top: 35px;">
+            {% for title, icon, subtitle in categorias_extendidas %}
+            <div style="background-color: var(--color-blanco); border-radius: 10px; border: 1px solid #ddd; padding: 15px; display: flex; align-items: flex-start; height: 150px; text-align: left; transition: all 0.2s;"
+                 onmouseover="this.style.border='2px solid var(--color-rojo-coral)'; this.style.boxShadow='2px 2px 5px rgba(0, 0, 0, 0.1)';" 
+                 onmouseout="this.style.border='1px solid #ddd'; this.style.boxShadow='none';"
+                 onclick="alert('Ir a {{ title }}')">
+                <div style="font-size: 36px; margin-right: 15px;">{{ icon }}</div>
+                <div>
+                    <h3 style="font-family: var(--font-titulo); font-size: 14px; font-weight: bold; color: var(--color-azul-oscuro); margin: 0 0 5px 0;">{{ title }}</h3>
+                    <p style="font-size: 10px; color: #666; margin: 0;">{{ subtitle }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+{% endblock %}
