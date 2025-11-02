@@ -3,13 +3,28 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 import re
+import os
 
 # Inicialización de la aplicación Flask
 app = Flask(__name__)
 
 # --- CONFIGURACIÓN DE LA BASE DE DATOS Y SESIÓN ---
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///farmacia.db'
-app.config['SECRET_KEY'] = 'tu_clave_secreta_super_segura_42'
+
+# Busca una variable de entorno llamada DATABASE_URL (que Render nos dará)
+# Si NO la encuentra, usa 'sqlite:///farmacia.db' como plan B (para desarrollo local).
+DATABASE_URI = os.environ.get('DATABASE_URL', 'sqlite:///farmacia.db')
+
+# Render usa "postgres://" pero SQLAlchemy prefiere "postgresql://"
+# Esta línea lo corrige automáticamente si es necesario.
+if DATABASE_URI.startswith("postgres://"):
+    DATABASE_URI = DATABASE_URI.replace("postgres://", "postgresql://", 1)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URI
+
+# Busca una variable de entorno llamada SECRET_KEY (que también pondremos en Render)
+# Si no la encuentra, usa una clave simple solo para pruebas en tu PC.
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'clave_local_de_prueba')
+
 db = SQLAlchemy(app)
 
 
@@ -307,6 +322,3 @@ def show_page(page_name):
 
     return render_template('pagina_generica.html', page_name=page_name, colores=COLORES)
 
-
-if __name__ == '__main__':
-    app.run(debug=True)
