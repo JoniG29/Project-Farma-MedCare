@@ -27,34 +27,6 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'clave_local_de_prueba')
 
 db = SQLAlchemy(app)
 
-# --- INICIO DE RUTA DE DEPURACIÓN ---
-# Añade esta nueva ruta temporalmente
-@app.route('/debug')
-def debug_route():
-    try:
-        # 1. ¿Qué valor crudo lee de Render para la DB?
-        raw_db_url = os.environ.get('DATABASE_URL')
-
-        # 2. ¿Qué valor crudo lee de Render para la Clave Secreta?
-        raw_secret_key = os.environ.get('SECRET_KEY')
-
-        # 3. ¿Qué valor final tiene la config de SQLAlchemy?
-        config_db_url = app.config.get('SQLALCHEMY_DATABASE_URI')
-
-        # 4. ¿Cómo está la clave secreta final?
-        config_secret_key = app.config.get('SECRET_KEY')
-
-        return f"""
-        <h1>Variables de Entorno (Debug)</h1>
-        <p><strong>1. Valor crudo de 'DATABASE_URL' (de os.environ):</strong> {str(raw_db_url)}</p>
-        <p><strong>2. Valor crudo de 'SECRET_KEY' (de os.environ):</strong> {str(raw_secret_key)}</p>
-        <hr>
-        <p><strong>3. Valor final de 'SQLALCHEMY_DATABASE_URI' (de app.config):</strong> {str(config_db_url)}</p>
-        <p><strong>4. Valor final de 'SECRET_KEY' (de app.config):</strong> {str(config_secret_key)}</p>
-        """
-    except Exception as e:
-        return f"Error durante la depuración: {str(e)}"
-# --- FIN DE RUTA DE DEPURACIÓN ---
 # ----------------------------------------
 # MODELO DE USUARIO
 # ----------------------------------------
