@@ -9,13 +9,27 @@
 
         <div class="products-grid">
             {% for prod in productos_antibioticos %}
-            <div class="product-card" style="width: 280px; height: 330px;">
+            <div class="product-card" style="width: 280px; height: 360px;">
                 <div class="product-card-image">
-                    {{ prod.imagen_placeholder }} 
+                    {{ prod.imagen_placeholder }}
                 </div>
                 <h3>{{ prod.nombre }}</h3>
                 <p class="price">${{ prod.precio }}</p>
-                <a href="{{ url_for('add_to_cart', product_id=prod.id) }}" class="btn-add">Añadir al carrito</a>
+
+                <form action="{{ url_for('add_to_cart', product_id=prod.id) }}" method="POST"
+                      style="display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 10px;">
+
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <label style="font-size: 13px; color: #666;">Cantidad:</label>
+                        <input type="number" name="quantity" value="1" min="1" max="20"
+                               style="width: 50px; padding: 5px; border-radius: 5px; border: 1px solid #ccc; text-align: center;">
+                    </div>
+
+                    <button type="submit" class="btn-add" style="width: 100%; cursor: pointer;">
+                        Añadir al carrito
+                    </button>
+                </form>
+
             </div>
             {% endfor %}
         </div>

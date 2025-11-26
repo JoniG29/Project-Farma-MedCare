@@ -341,7 +341,7 @@ def show_page(page_name):
 # RUTAS DEL CARRITO (AÑADIR / QUITAR)
 # ----------------------------------------
 
-@app.route('/add_to_cart/<product_id>')
+@app.route('/add_to_cart/<product_id>', methods=['POST'])
 @login_required
 def add_to_cart(product_id):
     cart = session.get('cart', {})
@@ -350,12 +350,26 @@ def add_to_cart(product_id):
         flash("Error: Producto no encontrado.", "error")
         return redirect(request.referrer or url_for('home'))
 
-    cart[product_id] = cart.get(product_id, 0) + 1
+    # 1. Obtenemos la cantidad del formulario (si falla, usamos 1 por defecto)
+    try:
+        cantidad = int(request.form.get('quantity', 1))
+    except ValueError:
+        cantidad = 1
+
+    # 2. Validamos que no sea menor a 1
+    if cantidad < 1:
+        cantidad = 1
+
+    # 3. Sumamos la cantidad seleccionada
+    cart[product_id] = cart.get(product_id, 0) + cantidad
+
     session['cart'] = cart
     session.modified = True
 
     producto = PRODUCTOS_DB[product_id]
-    flash(f"¡'{producto['nombre']}' añadido al carrito!", "success")
+    flash(f"¡Se añadieron {cantidad} unidad(es) de '{producto['nombre']}' al carrito!", "success")
+
+    # Regresamos a la página anterior
     return redirect(request.referrer or url_for('home'))
 
 

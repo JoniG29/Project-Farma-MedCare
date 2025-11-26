@@ -12,11 +12,24 @@
         <h2 class="section-title">NUESTROS PRODUCTOS DESTACADOS</h2>
         <div class="products-grid">
             {% for prod in productos %}
-            <div class="product-card" style="width: 330px; height: 330px;">
+            <div class="product-card" style="width: 330px; height: 360px;">
                 <div class="product-card-image">IMAGEN</div>
                 <h3>{{ prod.nombre }}</h3>
                 <p class="price">${{ prod.precio }}</p>
-                <a href="{{ url_for('add_to_cart', product_id=prod.id) }}" class="btn-add">Añadir al carrito</a>
+
+                <form action="{{ url_for('add_to_cart', product_id=prod.id) }}" method="POST"
+                      style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 15px;">
+
+                    <label style="font-size: 14px; color: #666; font-weight: bold;">Cant:</label>
+
+                    <input type="number" name="quantity" value="1" min="1" max="20"
+                           style="width: 50px; padding: 5px; border-radius: 5px; border: 1px solid #ccc; text-align: center; font-size: 14px;">
+
+                    <button type="submit" class="btn-add" style="padding: 8px 20px; cursor: pointer;">
+                        Añadir
+                    </button>
+                </form>
+
             </div>
             {% endfor %}
         </div>
