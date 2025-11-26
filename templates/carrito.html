@@ -12,32 +12,40 @@
             
             <div class="lista-productos">
                 
-                {% for item in carrito.productos %}
+                {% for item in productos_en_carrito %}
                 <div class="carrito-item">
-                    <div class="item-imagen">IMAGEN</div>
+                    <div class="item-imagen">{{ item.imagen_placeholder }}</div>
                     <div class="item-detalles">
                         <h4 style="margin: 0;">{{ item.nombre }}</h4>
-                        <p style="margin: 5px 0 0 0; font-size: 14px;">Cantidad: {{ item.cantidad }}</p>
+                        <p style="margin: 5px 0 0 0; font-size: 14px;">
+                           Cantidad: {{ item.cantidad }}
+                           &nbsp; | &nbsp;
+                           <a href="{{ url_for('remove_from_cart', product_id=item.id) }}" style="color: var(--color-rojo-coral); font-size: 12px;">Eliminar</a>
+                        </p>
                     </div>
                     <div class="item-precio">
-                        ${{ (item.precio * item.cantidad) | round(2) }}
+                        ${{ item.precio_total | round(2) }}
                     </div>
                 </div>
                 {% endfor %}
 
-                <p style="text-align: left; margin-top: 20px; font-size: 14px; color: var(--color-azul-oscuro);">
-                    Actualmente, tu carrito tiene {{ resumen.item_count }} productos.
-                </p>
+                {% if not productos_en_carrito %}
+                    <div style="text-align: center; padding: 40px;">
+                        <p style="font-size: 18px; color: #666; margin-bottom: 20px;">Tu carrito está vacío.</p>
+                        <a href="{{ url_for('home') }}" class="btn-add">Ver productos</a>
+                    </div>
+                {% endif %}
+
             </div>
 
 
-            <div class="resumen-pago">
+            <div class="resumen-pago" {% if not productos_en_carrito %}style="display: none;"{% endif %}>
                 <h3 class="section-title" style="font-size: 20px; margin-bottom: 15px; border-bottom: 1px solid #ccc; padding-bottom: 10px;">
                     Resumen del Pedido
                 </h3>
 
                 <div class="detalle-row">
-                    <span>Subtotal:</span>
+                    <span>Subtotal ({{ resumen.item_count }} productos):</span>
                     <span>${{ resumen.subtotal | round(2) }}</span>
                 </div>
 
@@ -45,7 +53,7 @@
                     <span>Envío Estimado:</span>
                     <span>${{ resumen.envio | round(2) }}</span>
                 </div>
-                
+
                 <hr style="border: none; border-top: 1px solid #ddd; margin: 15px 0;">
 
                 <div class="detalle-row total-row">
@@ -53,10 +61,14 @@
                     <span style="font-size: 18px; color: var(--color-rojo-coral);">${{ resumen.total | round(2) }}</span>
                 </div>
 
-                <button class="btn-add" style="width: 100%; height: 50px; font-size: 16px; margin-top: 20px;" 
+                <button class="btn-add" style="width: 100%; height: 50px; font-size: 16px; margin-top: 20px;"
                         onclick="alert('Procediendo al pago de ${{ resumen.total | round(2) }}')">
                     PROCEDER AL PAGO
                 </button>
+
+                <a href="{{ url_for('clear_cart') }}" style="display: block; text-align: center; color: var(--color-rojo-coral); font-size: 14px; margin-top: 15px;">
+                    Vaciar carrito
+                </a>
             </div>
         </div>
     </div>

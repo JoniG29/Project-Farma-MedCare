@@ -1,31 +1,28 @@
+import os
 from flask import Flask, render_template, redirect, url_for, request, session, flash
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 import re
-import os
 
 # Inicialización de la aplicación Flask
 app = Flask(__name__)
 
 # --- CONFIGURACIÓN DE LA BASE DE DATOS Y SESIÓN ---
-
-# Busca una variable de entorno llamada DATABASE_URL (que Render nos dará)
-# Si NO la encuentra, usa 'sqlite:///farmacia.db' como plan B (para desarrollo local).
+# Busca la URL de Render. Si no existe, usa SQLite local.
 DATABASE_URI = os.environ.get('DATABASE_URL', 'sqlite:///farmacia.db')
 
-# Render usa "postgres://" pero SQLAlchemy prefiere "postgresql://"
-# Esta línea lo corrige automáticamente si es necesario.
+# Corrección para PostgreSQL en Render
 if DATABASE_URI.startswith("postgres://"):
     DATABASE_URI = DATABASE_URI.replace("postgres://", "postgresql://", 1)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URI
 
-# Busca una variable de entorno llamada SECRET_KEY (que también pondremos en Render)
-# Si no la encuentra, usa una clave simple solo para pruebas en tu PC.
+# Clave secreta desde variable de entorno o por defecto para local
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'clave_local_de_prueba')
 
 db = SQLAlchemy(app)
+
 
 # ----------------------------------------
 # MODELO DE USUARIO
@@ -33,7 +30,8 @@ db = SQLAlchemy(app)
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
-    password_hash = db.Column(db.String(500))
+    # Aumentado a 256 para evitar errores de longitud
+    password_hash = db.Column(db.String(256))
 
     full_name = db.Column(db.String(120), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -50,7 +48,7 @@ class User(db.Model):
 with app.app_context():
     db.create_all()
 
-# --- Paleta de colores y Datos ---
+# --- Paleta de colores y Datos Estáticos ---
 COLOR_VERDE_MENTA = "#A1E8D5"
 COLOR_AZUL_CIELO = "#87CEFA"
 COLOR_GRIS_CALIDO = "#F0F0F0"
@@ -58,14 +56,35 @@ COLOR_BLANCO = "#FFFFFF"
 COLOR_ROJO_CORAL = "#FF6347"
 COLOR_AZUL_OSCURO = "#003366"
 
+COLORES = {
+    "verde_menta": COLOR_VERDE_MENTA,
+    "azul_cielo": COLOR_AZUL_CIELO,
+    "gris_calido": COLOR_GRIS_CALIDO,
+    "blanco": COLOR_BLANCO,
+    "rojo_coral": COLOR_ROJO_CORAL,
+    "azul_oscuro": COLOR_AZUL_OSCURO
+}
+
 CATEGORIAS_MENU = ["Salud", "Bebés", "Vitaminas y Suplementos", "Ayuda"]
 
-PRODUCTOS_DESTACADOS = [
-    {"nombre": "Analgésico", "precio": "99.00", "imagen_placeholder": "Analgesico"},
-    {"nombre": "Multivitamínico", "precio": "180.50", "imagen_placeholder": "Multivitaminico"},
-    {"nombre": "Protector Solar", "precio": "150.00", "imagen_placeholder": "ProtectorSolar"},
-    {"nombre": "Vitamina C", "precio": "120.00", "imagen_placeholder": "VitaminaC"},
-]
+# --- BASE DE DATOS MAESTRA DE PRODUCTOS ---
+PRODUCTOS_DB = {
+    # Productos Destacados
+    'p1': {"id": "p1", "nombre": "Analgésico", "precio": 99.00, "imagen_placeholder": "Analgesico"},
+    'p2': {"id": "p2", "nombre": "Multivitamínico", "precio": 180.50, "imagen_placeholder": "Multivitaminico"},
+    'p3': {"id": "p3", "nombre": "Protector Solar", "precio": 150.00, "imagen_placeholder": "ProtectorSolar"},
+    'p4': {"id": "p4", "nombre": "Vitamina C", "precio": 120.00, "imagen_placeholder": "VitaminaC"},
+
+    # Antibióticos
+    'a1': {"id": "a1", "nombre": "Amoxicilina 500mg", "precio": 85.00, "imagen_placeholder": "Amoxicilina"},
+    'a2': {"id": "a2", "nombre": "Azitromicina 250mg", "precio": 130.00, "imagen_placeholder": "Azitromicina"},
+    'a3': {"id": "a3", "nombre": "Ciprofloxacino", "precio": 110.00, "imagen_placeholder": "Ciprofloxacino"},
+    'a4': {"id": "a4", "nombre": "Metronidazol", "precio": 75.00, "imagen_placeholder": "Metronidazol"},
+}
+
+# Listas que solo contienen los IDs
+PRODUCTOS_DESTACADOS_IDS = ['p1', 'p2', 'p3', 'p4']
+ANTIBIOTICOS_DATA_IDS = ['a1', 'a2', 'a3', 'a4']
 
 CATEGORIAS_EXTENDIDAS = [
     ("Cuidado de la Piel", "🧴", "Productos para el rostro y cuerpo."),
@@ -76,45 +95,9 @@ CATEGORIAS_EXTENDIDAS = [
     ("Higiene Personal", "🧼", "Jabones, champús y desodorantes."),
 ]
 
-ANTIBIOTICOS_DATA = [
-    {"nombre": "Amoxicilina 500mg", "precio": "85.00", "imagen_placeholder": "Amoxicilina"},
-    {"nombre": "Azitromicina 250mg", "precio": "130.00", "imagen_placeholder": "Azitromicina"},
-    {"nombre": "Ciprofloxacino", "precio": "110.00", "imagen_placeholder": "Ciprofloxacino"},
-    {"nombre": "Metronidazol", "precio": "75.00", "imagen_placeholder": "Metronidazol"},
-]
-
 BEBES_DATA = ["Fórmulas Infantiles", "Pañales", "Cuidado del Bebé", "Alimentos para Bebé"]
 VITAMINAS_SUPLEMENTOS_DATA = ["Complementos Alimenticios", "Multivitaminas", "Suplementos Alimenticios"]
 AYUDA_DATA = ["Contáctanos", "Preguntas Frecuentes", "Localizador de SuperFarmacias"]
-
-CARRITO_DATA = {
-    "productos": [
-        {"nombre": "Amoxicilina 500mg", "precio": 85.00, "cantidad": 2},
-        {"nombre": "Protector Solar", "precio": 150.00, "cantidad": 1},
-        {"nombre": "Vitamina C", "precio": 120.00, "cantidad": 1},
-    ],
-    "envio": 50.00
-}
-
-
-def calcular_total_carrito(data):
-    subtotal = sum(item["precio"] * item["cantidad"] for item in data["productos"])
-    envio = data["envio"]
-    total = subtotal + envio
-    return {"subtotal": subtotal, "envio": envio, "total": total,
-            "item_count": sum(item["cantidad"] for item in data["productos"])}
-
-
-CARRITO_RESUMEN = calcular_total_carrito(CARRITO_DATA)
-
-COLORES = {
-    "verde_menta": COLOR_VERDE_MENTA,
-    "azul_cielo": COLOR_AZUL_CIELO,
-    "gris_calido": COLOR_GRIS_CALIDO,
-    "blanco": COLOR_BLANCO,
-    "rojo_coral": COLOR_ROJO_CORAL,
-    "azul_oscuro": COLOR_AZUL_OSCURO
-}
 
 
 # ----------------------------------------
@@ -134,7 +117,6 @@ def login_required(f):
 # ----------------------------------------
 # GESTIÓN DE LA SESIÓN
 # ----------------------------------------
-
 @app.context_processor
 def inject_user():
     return dict(logged_in=session.get('logged_in'), username=session.get('username'))
@@ -143,23 +125,20 @@ def inject_user():
 # ----------------------------------------
 # RUTAS DE AUTENTICACIÓN
 # ----------------------------------------
-
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-        confirm_password = request.form.get('confirm_password')  # NUEVO
+        confirm_password = request.form.get('confirm_password')
         full_name = request.form.get('full_name')
         email = request.form.get('email')
         address = request.form.get('address')
         phone_number = request.form.get('phone_number')
 
-        # 1. Validación de campos requeridos y unicidad
         if not username or not password or not full_name or not email or not confirm_password:
             return render_template('register.html', error="Todos los campos con (*) son requeridos.", colores=COLORES)
 
-        # 1.1. VALIDACIÓN: Confirmar contraseña
         if password != confirm_password:
             return render_template('register.html', error="Error: Las contraseñas ingresadas no coinciden.",
                                    colores=COLORES)
@@ -171,12 +150,10 @@ def register():
         if User.query.filter_by(email=email).first():
             return render_template('register.html', error="Error: El email ya está registrado.", colores=COLORES)
 
-        # 2. Validación de Contraseña Segura
         if not re.match(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$', password):
             error_msg = "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo (@$!%*?&)."
             return render_template('register.html', error=error_msg, colores=COLORES)
 
-        # 3. Creación y guardado del usuario
         new_user = User(
             username=username,
             full_name=full_name,
@@ -222,14 +199,10 @@ def login():
 @app.route('/forgot_password', methods=['GET', 'POST'])
 def forgot_password():
     if request.method == 'POST':
-        email = request.form.get('email')
-
-        # Simulación de proceso de envío de correo
         flash(
             "Si el correo electrónico está registrado, recibirás un enlace para restablecer tu contraseña. (Función simulada)",
             "info")
         return redirect(url_for('login'))
-
     return render_template('forgot_password.html', colores=COLORES)
 
 
@@ -237,6 +210,7 @@ def forgot_password():
 def logout():
     session.pop('logged_in', None)
     session.pop('username', None)
+    session.pop('cart', None)  # Opcional: limpiar carrito al salir
     return redirect(url_for('login'))
 
 
@@ -247,10 +221,13 @@ def logout():
 @app.route('/')
 @login_required
 def home():
+    # Convertimos los IDs en objetos completos
+    productos_completos = [PRODUCTOS_DB[pid] for pid in PRODUCTOS_DESTACADOS_IDS if pid in PRODUCTOS_DB]
+
     return render_template(
         'index.html',
         categorias=CATEGORIAS_MENU,
-        productos=PRODUCTOS_DESTACADOS,
+        productos=productos_completos,
         categorias_extendidas=CATEGORIAS_EXTENDIDAS,
         colores=COLORES
     )
@@ -269,10 +246,13 @@ def profile():
 @app.route('/pagina/Antibioticos')
 @login_required
 def antibioticos_page():
+    # Convertimos los IDs en objetos completos
+    productos_completos = [PRODUCTOS_DB[pid] for pid in ANTIBIOTICOS_DATA_IDS if pid in PRODUCTOS_DB]
+
     return render_template(
         'antibioticos.html',
         categorias=CATEGORIAS_MENU,
-        productos_antibioticos=ANTIBIOTICOS_DATA,
+        productos_antibioticos=productos_completos,
         colores=COLORES
     )
 
@@ -280,12 +260,48 @@ def antibioticos_page():
 @app.route('/pagina/Carrito')
 @login_required
 def carrito_page():
+    # 1. Obtener el carrito de la sesión
+    session_cart = session.get('cart', {})
+
+    productos_en_carrito = []
+    subtotal = 0
+    item_count = 0
+    envio = 50.00
+
+    # 2. Procesar el carrito
+    for product_id, cantidad in session_cart.items():
+        if product_id in PRODUCTOS_DB:
+            producto = PRODUCTOS_DB[product_id]
+            precio_total_item = producto['precio'] * cantidad
+
+            productos_en_carrito.append({
+                "id": product_id,
+                "nombre": producto['nombre'],
+                "precio_unitario": producto['precio'],
+                "cantidad": cantidad,
+                "precio_total": precio_total_item,
+                "imagen_placeholder": producto['imagen_placeholder']
+            })
+
+            subtotal += precio_total_item
+            item_count += cantidad
+
+    total = subtotal + envio if productos_en_carrito else 0
+    if not productos_en_carrito: envio = 0
+
+    resumen = {
+        "subtotal": subtotal,
+        "envio": envio,
+        "total": total,
+        "item_count": item_count
+    }
+
     return render_template(
         'carrito.html',
         categorias=CATEGORIAS_MENU,
         page_name="Carrito",
-        carrito=CARRITO_DATA,
-        resumen=CARRITO_RESUMEN,
+        productos_en_carrito=productos_en_carrito,
+        resumen=resumen,
         colores=COLORES
     )
 
@@ -307,7 +323,6 @@ def show_page(page_name):
 
     if page_name in page_map:
         page_info = page_map[page_name]
-
         if page_info["data"] is not None:
             return render_template(
                 'categoria_generica.html',
@@ -321,3 +336,46 @@ def show_page(page_name):
 
     return render_template('pagina_generica.html', page_name=page_name, colores=COLORES)
 
+
+# ----------------------------------------
+# RUTAS DEL CARRITO (AÑADIR / QUITAR)
+# ----------------------------------------
+
+@app.route('/add_to_cart/<product_id>')
+@login_required
+def add_to_cart(product_id):
+    cart = session.get('cart', {})
+
+    if product_id not in PRODUCTOS_DB:
+        flash("Error: Producto no encontrado.", "error")
+        return redirect(request.referrer or url_for('home'))
+
+    cart[product_id] = cart.get(product_id, 0) + 1
+    session['cart'] = cart
+    session.modified = True
+
+    producto = PRODUCTOS_DB[product_id]
+    flash(f"¡'{producto['nombre']}' añadido al carrito!", "success")
+    return redirect(request.referrer or url_for('home'))
+
+
+@app.route('/remove_from_cart/<product_id>')
+@login_required
+def remove_from_cart(product_id):
+    cart = session.get('cart', {})
+    if product_id in cart:
+        cart.pop(product_id)
+        session['cart'] = cart
+        session.modified = True
+        flash("Producto eliminado del carrito.", "info")
+    return redirect(url_for('carrito_page'))
+
+
+@app.route('/clear_cart')
+@login_required
+def clear_cart():
+    session.pop('cart', None)
+    flash("El carrito ha sido vaciado.", "info")
+    return redirect(url_for('carrito_page'))
+
+# Eliminamos app.run() para producción

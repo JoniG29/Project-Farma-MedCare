@@ -9,3 +9,5 @@ __pycache__/
 venv/
 .env
 .idea/
+# Archivo para visualizar a los usuarios
+ver_usuarios.py
