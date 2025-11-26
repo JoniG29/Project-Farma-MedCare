@@ -7,6 +7,8 @@
 
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+
     <style>
         :root {
             --color-verde-menta: {{ colores.verde_menta }};
@@ -27,7 +29,7 @@
         .banner h1 { font-family: var(--font-titulo); font-size: 42px; font-weight: 800; margin-bottom: 10px; }
         .banner p { font-size: 18px; }
 
-        /* --- ESTILOS DEL MODAL (VENTANA EMERGENTE) AGREGADOS --- */
+        /* --- ESTILOS DEL MODAL (VENTANA EMERGENTE) --- */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(0, 0, 0, 0.5);
@@ -72,11 +74,15 @@
     </header>
 
     <nav class="menu-bar">
-        {% for cat in categorias %}
-            {% set target_url = '/pagina/' + cat.replace(' ', '') %}
-            <button onclick="window.location.href='{{ target_url }}'">{{ cat }} ▾</button>
-        {% endfor %}
+        <button onclick="window.location.href='/pagina/Salud'">Salud ▾</button>
+
         <button onclick="window.location.href='/pagina/Antibioticos'">Antibióticos ▾</button>
+
+        <button onclick="window.location.href='/pagina/Bebes'">Bebés ▾</button>
+
+        <button onclick="window.location.href='/pagina/VitaminasySuplementos'">Vitaminas y Suplementos ▾</button>
+
+        <button onclick="window.location.href='/pagina/Ayuda'">Ayuda ▾</button>
     </nav>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
