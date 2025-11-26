@@ -80,11 +80,20 @@ PRODUCTOS_DB = {
     'a2': {"id": "a2", "nombre": "Azitromicina 250mg", "precio": 130.00, "imagen_placeholder": "Azitromicina"},
     'a3': {"id": "a3", "nombre": "Ciprofloxacino", "precio": 110.00, "imagen_placeholder": "Ciprofloxacino"},
     'a4': {"id": "a4", "nombre": "Metronidazol", "precio": 75.00, "imagen_placeholder": "Metronidazol"},
+
+    # --- NUEVOS: PRODUCTOS DE SALUD ---
+    's1': {"id": "s1", "nombre": "Cubrebocas KN95 (Paq. 10)", "precio": 150.00, "imagen_placeholder": "Cubrebocas"},
+    's2': {"id": "s2", "nombre": "Gel Antibacterial 1L", "precio": 85.00, "imagen_placeholder": "GelAnti"},
+    's3': {"id": "s3", "nombre": "Termómetro Digital", "precio": 220.00, "imagen_placeholder": "Termometro"},
+    's4': {"id": "s4", "nombre": "Alcohol Etílico 70°", "precio": 45.00, "imagen_placeholder": "Alcohol"},
+    's5': {"id": "s5", "nombre": "Vendas Elásticas", "precio": 12.00, "imagen_placeholder": "Vendas"},
+    's6': {"id": "s6", "nombre": "Oxímetro de Pulso", "precio": 350.00, "imagen_placeholder": "Oximetro"},
 }
 
-# Listas que solo contienen los IDs
+# Listas de IDs por categoría
 PRODUCTOS_DESTACADOS_IDS = ['p1', 'p2', 'p3', 'p4']
 ANTIBIOTICOS_DATA_IDS = ['a1', 'a2', 'a3', 'a4']
+SALUD_DATA_IDS = ['s1', 's2', 's3', 's4', 's5', 's6']
 
 CATEGORIAS_EXTENDIDAS = [
     ("Cuidado de la Piel", "🧴", "Productos para el rostro y cuerpo."),
@@ -210,7 +219,7 @@ def forgot_password():
 def logout():
     session.pop('logged_in', None)
     session.pop('username', None)
-    session.pop('cart', None)  # Opcional: limpiar carrito al salir
+    # session.pop('cart', None) # Opcional: limpiar carrito al salir
     return redirect(url_for('login'))
 
 
@@ -246,9 +255,7 @@ def profile():
 @app.route('/pagina/Antibioticos')
 @login_required
 def antibioticos_page():
-    # Convertimos los IDs en objetos completos
     productos_completos = [PRODUCTOS_DB[pid] for pid in ANTIBIOTICOS_DATA_IDS if pid in PRODUCTOS_DB]
-
     return render_template(
         'antibioticos.html',
         categorias=CATEGORIAS_MENU,
@@ -257,10 +264,25 @@ def antibioticos_page():
     )
 
 
+# --- NUEVA RUTA PARA SALUD ---
+@app.route('/pagina/Salud')
+@login_required
+def salud_page():
+    productos_completos = [PRODUCTOS_DB[pid] for pid in SALUD_DATA_IDS if pid in PRODUCTOS_DB]
+    return render_template(
+        'salud.html',
+        categorias=CATEGORIAS_MENU,
+        productos=productos_completos,
+        colores=COLORES
+    )
+
+
+# -----------------------------
+
+
 @app.route('/pagina/Carrito')
 @login_required
 def carrito_page():
-    # 1. Obtener el carrito de la sesión
     session_cart = session.get('cart', {})
 
     productos_en_carrito = []
@@ -268,7 +290,6 @@ def carrito_page():
     item_count = 0
     envio = 50.00
 
-    # 2. Procesar el carrito
     for product_id, cantidad in session_cart.items():
         if product_id in PRODUCTOS_DB:
             producto = PRODUCTOS_DB[product_id]
@@ -310,7 +331,6 @@ def carrito_page():
 @login_required
 def show_page(page_name):
     page_map = {
-        "Salud": {"data": None, "title": "Salud"},
         "Bebés": {"data": BEBES_DATA, "title": "Bebés"},
         "VitaminasySuplementos": {"data": VITAMINAS_SUPLEMENTOS_DATA, "title": "Vitaminas y Suplementos"},
         "Ayuda": {"data": AYUDA_DATA, "title": "Ayuda"},
@@ -318,6 +338,8 @@ def show_page(page_name):
 
     if page_name == "Antibioticos":
         return antibioticos_page()
+    elif page_name == "Salud":
+        return salud_page()
     elif page_name == "Carrito":
         return carrito_page()
 
@@ -338,7 +360,7 @@ def show_page(page_name):
 
 
 # ----------------------------------------
-# RUTAS DEL CARRITO (AÑADIR / QUITAR)
+# RUTAS DEL CARRITO
 # ----------------------------------------
 
 @app.route('/add_to_cart/<product_id>', methods=['POST'])
@@ -350,23 +372,20 @@ def add_to_cart(product_id):
         flash("Error: Producto no encontrado.", "error")
         return redirect(request.referrer or url_for('home'))
 
-    # 1. Obtenemos la cantidad del formulario (si falla, usamos 1 por defecto)
     try:
         cantidad = int(request.form.get('quantity', 1))
     except ValueError:
         cantidad = 1
 
-    # 2. Validamos que no sea menor a 1
-    if cantidad < 1:
-        cantidad = 1
+    if cantidad < 1: cantidad = 1
 
-    # 3. Sumamos la cantidad seleccionada
     cart[product_id] = cart.get(product_id, 0) + cantidad
-
     session['cart'] = cart
     session.modified = True
 
     producto = PRODUCTOS_DB[product_id]
+
+    # MODAL FLASH
     mensaje = f"Has añadido {cantidad} x {producto['nombre']} al carrito."
     flash(mensaje, "cart_modal")
 
@@ -391,5 +410,3 @@ def clear_cart():
     session.pop('cart', None)
     flash("El carrito ha sido vaciado.", "info")
     return redirect(url_for('carrito_page'))
-
-# Eliminamos app.run() para producción
