@@ -10,9 +10,9 @@
         <p class="description-label">Estamos aquí para escucharte y resolver tus dudas.</p>
 
         <div class="tabs-container">
-            <button class="tab-btn active" onclick="openTab(event, 'Contactanos')">📞 Contáctanos</button>
-            <button class="tab-btn" onclick="openTab(event, 'FAQ')">❓ Preguntas Frecuentes</button>
-            <button class="tab-btn" onclick="openTab(event, 'Mapa')">📍 Localizador</button>
+            <button id="btnContactos" class="tab-btn active" onclick="openTab(event, 'Contactanos')">📞 Contáctanos</button>
+            <button id="btnFAQ" class="tab-btn" onclick="openTab(event, 'FAQ')">❓ Preguntas Frecuentes</button>
+            <button id="btnMapa" class="tab-btn" onclick="openTab(event, 'Mapa')">📍 Localizador</button>
         </div>
 
         <div id="Contactanos" class="tab-content" style="display: block;">
@@ -21,7 +21,7 @@
                 <form action="{{ url_for('enviar_contacto') }}" method="POST">
                     <label>Nombre Completo:</label>
                     <input type="text" name="nombre" value="{{ username }}" class="input-field" readonly style="background-color: #f0f0f0;">
-                    
+
                     <label>Asunto:</label>
                     <select name="asunto" class="input-field">
                         <option>Duda sobre un producto</option>
@@ -94,7 +94,6 @@
 
             <div id="map" style="height: 450px; width: 100%; border-radius: 12px; z-index: 1;"></div>
         </div>
-
     </div>
 
     <style>
@@ -111,7 +110,6 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
-        // --- 1. CONFIGURACIÓN INICIAL DEL MAPA (Centrado en Durango) ---
         var map = L.map('map').setView([24.0277, -104.6532], 13);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -120,30 +118,24 @@
 
         var capaMarcadores = L.layerGroup().addTo(map);
 
-        // --- 2. DATOS REALES DE DURANGO Y DEMO DE OTROS ---
         var datosFarmacias = [
-            // === DURANGO (COORDENADAS REALES) ===
+            // DURANGO
             {estado: "Durango", lat: 24.0249, lon: -104.6703, nombre: "Farmacia GDL - Centro Histórico"},
             {estado: "Durango", lat: 24.0335, lon: -104.6633, nombre: "Farmacia GDL - Felipe Pescador"},
             {estado: "Durango", lat: 24.0150, lon: -104.6550, nombre: "Farmacia GDL - Barrio de Analco"},
             {estado: "Durango", lat: 24.0500, lon: -104.6300, nombre: "Farmacia GDL - Ciudad Industrial"},
-            // Santiago Papasquiaro (Real aprox)
             {estado: "Durango", lat: 25.0435, lon: -105.4215, nombre: "Farmacia GDL - Santiago Papasquiaro Centro"},
-
-            // === JALISCO (DEMO) ===
+            // JALISCO (DEMO)
             {estado: "Jalisco", lat: 20.6736, lon: -103.3440, nombre: "Sucursal Centro Histórico"},
             {estado: "Jalisco", lat: 20.6800, lon: -103.3500, nombre: "Sucursal Av. Alcalde"},
-
-            // === CDMX (DEMO) ===
+            // CDMX (DEMO)
             {estado: "CDMX", lat: 19.4326, lon: -99.1332, nombre: "Sucursal Zócalo CDMX"},
             {estado: "CDMX", lat: 19.4270, lon: -99.1677, nombre: "Sucursal Reforma Ángel"},
-
-            // === NUEVO LEÓN (DEMO) ===
+            // NUEVO LEÓN (DEMO)
             {estado: "NuevoLeon", lat: 25.6698, lon: -100.3150, nombre: "Sucursal Macroplaza MTY"},
             {estado: "NuevoLeon", lat: 25.6515, lon: -100.3569, nombre: "Sucursal San Pedro"},
         ];
 
-        // --- 3. VISTAS DE LOS 32 ESTADOS (Coordenadas de la capital de cada uno) ---
         var vistasEstados = {
             "Durango": {lat: 24.0277, lon: -104.6532, zoom: 13},
             "Aguascalientes": {lat: 21.8853, lon: -102.2916, zoom: 13},
@@ -167,27 +159,22 @@
             "Oaxaca": {lat: 17.0732, lon: -96.7266, zoom: 13},
             "Puebla": {lat: 19.0414, lon: -98.2063, zoom: 13},
             "Queretaro": {lat: 20.5888, lon: -100.3899, zoom: 13},
-            "QuintanaRoo": {lat: 18.5002, lon: -88.3000, zoom: 13}, // Chetumal
+            "QuintanaRoo": {lat: 18.5002, lon: -88.3000, zoom: 13},
             "SanLuisPotosi": {lat: 22.1565, lon: -100.9855, zoom: 13},
             "Sinaloa": {lat: 24.8059, lon: -107.3944, zoom: 13},
             "Sonora": {lat: 29.0730, lon: -110.9559, zoom: 13},
             "Tabasco": {lat: 17.9895, lon: -92.9475, zoom: 13},
             "Tamaulipas": {lat: 23.7369, lon: -99.1411, zoom: 13},
             "Tlaxcala": {lat: 19.3182, lon: -98.2375, zoom: 14},
-            "Veracruz": {lat: 19.5438, lon: -96.9102, zoom: 13}, // Xalapa
+            "Veracruz": {lat: 19.5438, lon: -96.9102, zoom: 13},
             "Yucatan": {lat: 20.9674, lon: -89.5926, zoom: 13},
             "Zacatecas": {lat: 22.7709, lon: -102.5832, zoom: 13}
         };
 
-        // --- 4. FUNCIÓN PARA CAMBIAR ESTADO ---
         function cambiarEstado() {
             var selector = document.getElementById("selectorEstado");
             var estadoSeleccionado = selector.value;
-
-            // 1. Borrar marcadores actuales
             capaMarcadores.clearLayers();
-
-            // 2. Filtrar y agregar nuevos marcadores
             datosFarmacias.forEach(function(sucursal) {
                 if(sucursal.estado === estadoSeleccionado) {
                     L.marker([sucursal.lat, sucursal.lon])
@@ -195,15 +182,12 @@
                         .bindPopup("<b>" + sucursal.nombre + "</b><br>Horario: 24 Horas");
                 }
             });
-
-            // 3. Mover la cámara al nuevo estado
             var vista = vistasEstados[estadoSeleccionado];
             if(vista) {
                 map.flyTo([vista.lat, vista.lon], vista.zoom);
             }
         }
 
-        // --- 5. LÓGICA DE PESTAÑAS ---
         function openTab(evt, tabName) {
             var i, tabcontent, tablinks;
             tabcontent = document.getElementsByClassName("tab-content");
@@ -216,12 +200,20 @@
             if (tabName === 'Mapa') {
                 setTimeout(function(){
                     map.invalidateSize();
-                    cambiarEstado(); // Asegurar que Durango cargue al abrir
+                    cambiarEstado();
                 }, 200);
             }
         }
 
-        // Inicializar
-        cambiarEstado();
+        // --- DETECCIÓN DE URL PARA ABRIR MAPA AUTOMÁTICAMENTE ---
+        document.addEventListener("DOMContentLoaded", function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const tab = urlParams.get('tab');
+            if (tab === 'Mapa') {
+                document.getElementById('btnMapa').click();
+            } else {
+                cambiarEstado();
+            }
+        });
     </script>
 {% endblock %}
