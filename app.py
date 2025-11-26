@@ -8,31 +8,32 @@ import re
 # Inicialización de la aplicación Flask
 app = Flask(__name__)
 
-# --- CONFIGURACIÓN DE LA BASE DE DATOS Y SESIÓN ---
-# Busca la URL de Render. Si no existe, usa SQLite local.
+# ----------------------------------------
+# 1. CONFIGURACIÓN DEL SERVIDOR Y BASE DE DATOS
+# ----------------------------------------
+# Busca la URL de la base de datos en las variables de entorno de Render
+# Si no la encuentra, usa la base de datos local 'farmacia.db'
 DATABASE_URI = os.environ.get('DATABASE_URL', 'sqlite:///farmacia.db')
 
-# Corrección para PostgreSQL en Render
+# Corrección necesaria para PostgreSQL en Render (cambia postgres:// a postgresql://)
 if DATABASE_URI.startswith("postgres://"):
     DATABASE_URI = DATABASE_URI.replace("postgres://", "postgresql://", 1)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URI
 
-# Clave secreta desde variable de entorno o por defecto para local
+# Clave secreta para la sesión (seguridad)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'clave_local_de_prueba')
 
 db = SQLAlchemy(app)
 
 
 # ----------------------------------------
-# MODELO DE USUARIO
+# 2. MODELO DE USUARIO (BASE DE DATOS)
 # ----------------------------------------
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
-    # Aumentado a 256 para evitar errores de longitud
-    password_hash = db.Column(db.String(256))
-
+    password_hash = db.Column(db.String(256))  # Tamaño 256 para seguridad
     full_name = db.Column(db.String(120), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     address = db.Column(db.String(200), nullable=True)
@@ -45,10 +46,13 @@ class User(db.Model):
         return check_password_hash(self.password_hash, password)
 
 
+# Crear tablas si no existen
 with app.app_context():
     db.create_all()
 
-# --- Paleta de colores y Datos Estáticos ---
+# ----------------------------------------
+# 3. DATOS ESTÁTICOS (COLORES Y MENÚS)
+# ----------------------------------------
 COLOR_VERDE_MENTA = "#A1E8D5"
 COLOR_AZUL_CIELO = "#87CEFA"
 COLOR_GRIS_CALIDO = "#F0F0F0"
@@ -67,56 +71,6 @@ COLORES = {
 
 CATEGORIAS_MENU = ["Salud", "Bebés", "Vitaminas y Suplementos", "Ayuda"]
 
-# --- BASE DE DATOS MAESTRA DE PRODUCTOS ---
-PRODUCTOS_DB = {
-    # Productos Destacados
-    'p1': {"id": "p1", "nombre": "Analgésico", "precio": 99.00, "imagen_placeholder": "Analgesico"},
-    'p2': {"id": "p2", "nombre": "Multivitamínico", "precio": 180.50, "imagen_placeholder": "Multivitaminico"},
-    'p3': {"id": "p3", "nombre": "Protector Solar", "precio": 150.00, "imagen_placeholder": "ProtectorSolar"},
-    'p4': {"id": "p4", "nombre": "Vitamina C", "precio": 120.00, "imagen_placeholder": "VitaminaC"},
-
-    # Antibióticos
-    'a1': {"id": "a1", "nombre": "Amoxicilina 500mg", "precio": 85.00, "imagen_placeholder": "Amoxicilina"},
-    'a2': {"id": "a2", "nombre": "Azitromicina 250mg", "precio": 130.00, "imagen_placeholder": "Azitromicina"},
-    'a3': {"id": "a3", "nombre": "Ciprofloxacino", "precio": 110.00, "imagen_placeholder": "Ciprofloxacino"},
-    'a4': {"id": "a4", "nombre": "Metronidazol", "precio": 75.00, "imagen_placeholder": "Metronidazol"},
-
-    # Salud
-    's1': {"id": "s1", "nombre": "Cubrebocas KN95 (Paq. 10)", "precio": 150.00, "imagen_placeholder": "Cubrebocas"},
-    's2': {"id": "s2", "nombre": "Gel Antibacterial 1L", "precio": 85.00, "imagen_placeholder": "GelAnti"},
-    's3': {"id": "s3", "nombre": "Termómetro Digital", "precio": 220.00, "imagen_placeholder": "Termometro"},
-    's4': {"id": "s4", "nombre": "Alcohol Etílico 70°", "precio": 45.00, "imagen_placeholder": "Alcohol"},
-    's5': {"id": "s5", "nombre": "Vendas Elásticas", "precio": 12.00, "imagen_placeholder": "Vendas"},
-    's6': {"id": "s6", "nombre": "Oxímetro de Pulso", "precio": 350.00, "imagen_placeholder": "Oximetro"},
-
-    # --- NUEVOS: PRODUCTOS DE BEBÉS (Con subcategoría) ---
-    'b1': {"id": "b1", "nombre": "Fórmula NAN 1 (800g)", "precio": 450.00, "imagen_placeholder": "Nan1",
-           "subcategoria": "formulas"},
-    'b2': {"id": "b2", "nombre": "Enfamil Confort", "precio": 520.00, "imagen_placeholder": "Enfamil",
-           "subcategoria": "formulas"},
-
-    'b3': {"id": "b3", "nombre": "Pañales Huggies RN (30pz)", "precio": 180.00, "imagen_placeholder": "HuggiesRN",
-           "subcategoria": "panales"},
-    'b4': {"id": "b4", "nombre": "Pañales BioBaby Etapa 3", "precio": 210.00, "imagen_placeholder": "BioBaby",
-           "subcategoria": "panales"},
-
-    'b5': {"id": "b5", "nombre": "Shampoo Ricitos de Oro", "precio": 65.00, "imagen_placeholder": "ShampooBebe",
-           "subcategoria": "cuidado"},
-    'b6': {"id": "b6", "nombre": "Toallitas Húmedas (Paq. 4)", "precio": 120.00, "imagen_placeholder": "Toallitas",
-           "subcategoria": "cuidado"},
-
-    'b7': {"id": "b7", "nombre": "Gerber de Manzana", "precio": 18.00, "imagen_placeholder": "Gerber",
-           "subcategoria": "alimentos"},
-    'b8': {"id": "b8", "nombre": "Cereal Infantil Nestum", "precio": 45.00, "imagen_placeholder": "Cereal",
-           "subcategoria": "alimentos"},
-}
-
-# Listas de IDs por categoría
-PRODUCTOS_DESTACADOS_IDS = ['p1', 'p2', 'p3', 'p4']
-ANTIBIOTICOS_DATA_IDS = ['a1', 'a2', 'a3', 'a4']
-SALUD_DATA_IDS = ['s1', 's2', 's3', 's4', 's5', 's6']
-BEBES_DATA_IDS = ['b1', 'b2', 'b3', 'b4', 'b5', 'b6', 'b7', 'b8']
-
 CATEGORIAS_EXTENDIDAS = [
     ("Cuidado de la Piel", "🧴", "Productos para el rostro y cuerpo."),
     ("Primeros Auxilios", "🩹", "Kits esenciales para emergencias."),
@@ -126,14 +80,76 @@ CATEGORIAS_EXTENDIDAS = [
     ("Higiene Personal", "🧼", "Jabones, champús y desodorantes."),
 ]
 
-# Datos genéricos (ya no se usan para Bebés, pero los dejamos por compatibilidad)
-BEBES_DATA = ["Fórmulas Infantiles", "Pañales", "Cuidado del Bebé", "Alimentos para Bebé"]
-VITAMINAS_SUPLEMENTOS_DATA = ["Complementos Alimenticios", "Multivitaminas", "Suplementos Alimenticios"]
+# Datos para páginas genéricas (solo texto)
 AYUDA_DATA = ["Contáctanos", "Preguntas Frecuentes", "Localizador de SuperFarmacias"]
+
+# ----------------------------------------
+# 4. BASE DE DATOS DE PRODUCTOS (CATÁLOGO)
+# ----------------------------------------
+PRODUCTOS_DB = {
+    # --- PRODUCTOS DESTACADOS (Inicio) ---
+    'p1': {"id": "p1", "nombre": "Analgésico", "precio": 99.00, "imagen_placeholder": "Analgesico"},
+    'p2': {"id": "p2", "nombre": "Multivitamínico", "precio": 180.50, "imagen_placeholder": "Multivitaminico"},
+    'p3': {"id": "p3", "nombre": "Protector Solar", "precio": 150.00, "imagen_placeholder": "ProtectorSolar"},
+    'p4': {"id": "p4", "nombre": "Vitamina C", "precio": 120.00, "imagen_placeholder": "VitaminaC"},
+
+    # --- ANTIBIÓTICOS ---
+    'a1': {"id": "a1", "nombre": "Amoxicilina 500mg", "precio": 85.00, "imagen_placeholder": "Amoxicilina"},
+    'a2': {"id": "a2", "nombre": "Azitromicina 250mg", "precio": 130.00, "imagen_placeholder": "Azitromicina"},
+    'a3': {"id": "a3", "nombre": "Ciprofloxacino", "precio": 110.00, "imagen_placeholder": "Ciprofloxacino"},
+    'a4': {"id": "a4", "nombre": "Metronidazol", "precio": 75.00, "imagen_placeholder": "Metronidazol"},
+
+    # --- SALUD E HIGIENE ---
+    's1': {"id": "s1", "nombre": "Cubrebocas KN95 (Paq. 10)", "precio": 150.00, "imagen_placeholder": "Cubrebocas"},
+    's2': {"id": "s2", "nombre": "Gel Antibacterial 1L", "precio": 85.00, "imagen_placeholder": "GelAnti"},
+    's3': {"id": "s3", "nombre": "Termómetro Digital", "precio": 220.00, "imagen_placeholder": "Termometro"},
+    's4': {"id": "s4", "nombre": "Alcohol Etílico 70°", "precio": 45.00, "imagen_placeholder": "Alcohol"},
+    's5': {"id": "s5", "nombre": "Vendas Elásticas", "precio": 12.00, "imagen_placeholder": "Vendas"},
+    's6': {"id": "s6", "nombre": "Oxímetro de Pulso", "precio": 350.00, "imagen_placeholder": "Oximetro"},
+
+    # --- BEBÉS (Con Subcategorías) ---
+    'b1': {"id": "b1", "nombre": "Fórmula NAN 1 (800g)", "precio": 450.00, "imagen_placeholder": "Nan1",
+           "subcategoria": "formulas"},
+    'b2': {"id": "b2", "nombre": "Enfamil Confort", "precio": 520.00, "imagen_placeholder": "Enfamil",
+           "subcategoria": "formulas"},
+    'b3': {"id": "b3", "nombre": "Pañales Huggies RN (30pz)", "precio": 180.00, "imagen_placeholder": "HuggiesRN",
+           "subcategoria": "panales"},
+    'b4': {"id": "b4", "nombre": "Pañales BioBaby Etapa 3", "precio": 210.00, "imagen_placeholder": "BioBaby",
+           "subcategoria": "panales"},
+    'b5': {"id": "b5", "nombre": "Shampoo Ricitos de Oro", "precio": 65.00, "imagen_placeholder": "ShampooBebe",
+           "subcategoria": "cuidado"},
+    'b6': {"id": "b6", "nombre": "Toallitas Húmedas (Paq. 4)", "precio": 120.00, "imagen_placeholder": "Toallitas",
+           "subcategoria": "cuidado"},
+    'b7': {"id": "b7", "nombre": "Gerber de Manzana", "precio": 18.00, "imagen_placeholder": "Gerber",
+           "subcategoria": "alimentos"},
+    'b8': {"id": "b8", "nombre": "Cereal Infantil Nestum", "precio": 45.00, "imagen_placeholder": "Cereal",
+           "subcategoria": "alimentos"},
+
+    # --- VITAMINAS Y SUPLEMENTOS (Con Subcategorías) ---
+    'v1': {"id": "v1", "nombre": "Centrum Performance", "precio": 280.00, "imagen_placeholder": "Centrum",
+           "subcategoria": "multi"},
+    'v2': {"id": "v2", "nombre": "Redoxon Vitamina C", "precio": 110.00, "imagen_placeholder": "Redoxon",
+           "subcategoria": "multi"},
+    'v3': {"id": "v3", "nombre": "Proteína Whey Gold 1kg", "precio": 850.00, "imagen_placeholder": "WheyProtein",
+           "subcategoria": "deportiva"},
+    'v4': {"id": "v4", "nombre": "Creatina Monohidratada", "precio": 320.00, "imagen_placeholder": "Creatina",
+           "subcategoria": "deportiva"},
+    'v5': {"id": "v5", "nombre": "Melatonina 5mg (Sueño)", "precio": 140.00, "imagen_placeholder": "Melatonina",
+           "subcategoria": "natural"},
+    'v6': {"id": "v6", "nombre": "Omega 3 (Aceite de Salmón)", "precio": 210.00, "imagen_placeholder": "Omega3",
+           "subcategoria": "natural"},
+}
+
+# Listas de control de IDs
+PRODUCTOS_DESTACADOS_IDS = ['p1', 'p2', 'p3', 'p4']
+ANTIBIOTICOS_DATA_IDS = ['a1', 'a2', 'a3', 'a4']
+SALUD_DATA_IDS = ['s1', 's2', 's3', 's4', 's5', 's6']
+BEBES_DATA_IDS = ['b1', 'b2', 'b3', 'b4', 'b5', 'b6', 'b7', 'b8']
+VITAMINAS_DATA_IDS = ['v1', 'v2', 'v3', 'v4', 'v5', 'v6']
 
 
 # ----------------------------------------
-# DECORADOR DE RESTRICCIÓN DE ACCESO
+# 5. SEGURIDAD Y DECORADORES
 # ----------------------------------------
 def login_required(f):
     @wraps(f)
@@ -146,16 +162,14 @@ def login_required(f):
     return decorated_function
 
 
-# ----------------------------------------
-# GESTIÓN DE LA SESIÓN
-# ----------------------------------------
+# Inyectar usuario en todas las plantillas
 @app.context_processor
 def inject_user():
     return dict(logged_in=session.get('logged_in'), username=session.get('username'))
 
 
 # ----------------------------------------
-# RUTAS DE AUTENTICACIÓN
+# 6. RUTAS DE AUTENTICACIÓN
 # ----------------------------------------
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -168,6 +182,7 @@ def register():
         address = request.form.get('address')
         phone_number = request.form.get('phone_number')
 
+        # Validaciones
         if not username or not password or not full_name or not email or not confirm_password:
             return render_template('register.html', error="Todos los campos con (*) son requeridos.", colores=COLORES)
 
@@ -183,24 +198,20 @@ def register():
             return render_template('register.html', error="Error: El email ya está registrado.", colores=COLORES)
 
         if not re.match(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$', password):
-            error_msg = "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo (@$!%*?&)."
+            error_msg = "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo."
             return render_template('register.html', error=error_msg, colores=COLORES)
 
+        # Crear Usuario
         new_user = User(
-            username=username,
-            full_name=full_name,
-            email=email,
-            address=address,
-            phone_number=phone_number
+            username=username, full_name=full_name, email=email,
+            address=address, phone_number=phone_number
         )
         new_user.set_password(password)
-
         db.session.add(new_user)
         db.session.commit()
 
         session['logged_in'] = True
         session['username'] = username
-
         return redirect(url_for('home'))
 
     return render_template('register.html', colores=COLORES)
@@ -214,7 +225,6 @@ def login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-
         user = User.query.filter_by(username=username).first()
 
         if user and user.check_password(password):
@@ -231,9 +241,7 @@ def login():
 @app.route('/forgot_password', methods=['GET', 'POST'])
 def forgot_password():
     if request.method == 'POST':
-        flash(
-            "Si el correo electrónico está registrado, recibirás un enlace para restablecer tu contraseña. (Función simulada)",
-            "info")
+        flash("Si el correo electrónico está registrado, recibirás un enlace para restablecer tu contraseña.", "info")
         return redirect(url_for('login'))
     return render_template('forgot_password.html', colores=COLORES)
 
@@ -246,9 +254,10 @@ def logout():
 
 
 # ----------------------------------------
-# RUTAS DE NAVEGACIÓN PROTEGIDAS
+# 7. RUTAS DE NAVEGACIÓN (PÁGINAS)
 # ----------------------------------------
 
+# --- INICIO ---
 @app.route('/')
 @login_required
 def home():
@@ -262,12 +271,14 @@ def home():
     )
 
 
+# --- PERFIL ---
 @app.route('/profile')
 @login_required
 def profile():
     return render_template('profile.html', categorias=CATEGORIAS_MENU, colores=COLORES)
 
 
+# --- CATEGORÍA: ANTIBIÓTICOS ---
 @app.route('/pagina/Antibioticos')
 @login_required
 def antibioticos_page():
@@ -280,6 +291,7 @@ def antibioticos_page():
     )
 
 
+# --- CATEGORÍA: SALUD ---
 @app.route('/pagina/Salud')
 @login_required
 def salud_page():
@@ -292,17 +304,13 @@ def salud_page():
     )
 
 
-# --- NUEVA RUTA PARA BEBÉS CON FILTRO ---
+# --- CATEGORÍA: BEBÉS (Con Filtro) ---
 @app.route('/pagina/Bebes')
 @login_required
 def bebes_page():
-    # 1. Obtenemos el filtro de la URL (si existe)
     filtro_actual = request.args.get('filtro')
-
-    # 2. Obtenemos TODOS los productos de bebés primero
     productos_bebes = [PRODUCTOS_DB[pid] for pid in BEBES_DATA_IDS if pid in PRODUCTOS_DB]
 
-    # 3. Si hay filtro, dejamos solo los que coincidan con la subcategoría
     if filtro_actual:
         productos_bebes = [p for p in productos_bebes if p.get('subcategoria') == filtro_actual]
 
@@ -315,6 +323,27 @@ def bebes_page():
     )
 
 
+# --- CATEGORÍA: VITAMINAS (Con Filtro) ---
+# Se quitan espacios en la URL para coincidir con el menú
+@app.route('/pagina/VitaminasySuplementos')
+@login_required
+def vitaminas_page():
+    filtro_actual = request.args.get('filtro')
+    productos_vit = [PRODUCTOS_DB[pid] for pid in VITAMINAS_DATA_IDS if pid in PRODUCTOS_DB]
+
+    if filtro_actual:
+        productos_vit = [p for p in productos_vit if p.get('subcategoria') == filtro_actual]
+
+    return render_template(
+        'vitaminas.html',
+        categorias=CATEGORIAS_MENU,
+        productos=productos_vit,
+        filtro_actual=filtro_actual,
+        colores=COLORES
+    )
+
+
+# --- CARRITO DE COMPRAS ---
 @app.route('/pagina/Carrito')
 @login_required
 def carrito_page():
@@ -362,42 +391,41 @@ def carrito_page():
     )
 
 
+# --- RUTA GENÉRICA (Manejo de errores o páginas futuras) ---
 @app.route('/pagina/<page_name>')
 @login_required
 def show_page(page_name):
     page_map = {
-        "VitaminasySuplementos": {"data": VITAMINAS_SUPLEMENTOS_DATA, "title": "Vitaminas y Suplementos"},
         "Ayuda": {"data": AYUDA_DATA, "title": "Ayuda"},
     }
 
-    # Redirecciones a rutas específicas
+    # Redirecciones de seguridad por si alguien escribe la URL a mano
     if page_name == "Antibioticos":
         return antibioticos_page()
     elif page_name == "Salud":
         return salud_page()
     elif page_name == "Bebés":
-        return bebes_page()  # Flask prefiere la ruta explícita, pero esto ayuda
+        return bebes_page()
+    elif page_name == "VitaminasySuplementos":
+        return vitaminas_page()
     elif page_name == "Carrito":
         return carrito_page()
 
     if page_name in page_map:
         page_info = page_map[page_name]
-        if page_info["data"] is not None:
-            return render_template(
-                'categoria_generica.html',
-                categorias=CATEGORIAS_MENU,
-                page_title=page_info["title"],
-                sub_categories=page_info["data"],
-                colores=COLORES
-            )
-        else:
-            return render_template('pagina_generica.html', page_name=page_name, colores=COLORES)
+        return render_template(
+            'categoria_generica.html',
+            categorias=CATEGORIAS_MENU,
+            page_title=page_info["title"],
+            sub_categories=page_info["data"],
+            colores=COLORES
+        )
 
     return render_template('pagina_generica.html', page_name=page_name, colores=COLORES)
 
 
 # ----------------------------------------
-# RUTAS DEL CARRITO
+# 8. LÓGICA DEL CARRITO (ACCIONES)
 # ----------------------------------------
 
 @app.route('/add_to_cart/<product_id>', methods=['POST'])
@@ -409,6 +437,7 @@ def add_to_cart(product_id):
         flash("Error: Producto no encontrado.", "error")
         return redirect(request.referrer or url_for('home'))
 
+    # Obtener cantidad del formulario
     try:
         cantidad = int(request.form.get('quantity', 1))
     except ValueError:
@@ -416,12 +445,14 @@ def add_to_cart(product_id):
 
     if cantidad < 1: cantidad = 1
 
+    # Actualizar carrito
     cart[product_id] = cart.get(product_id, 0) + cantidad
     session['cart'] = cart
     session.modified = True
 
     producto = PRODUCTOS_DB[product_id]
 
+    # Mensaje especial para el Modal
     mensaje = f"Has añadido {cantidad} x {producto['nombre']} al carrito."
     flash(mensaje, "cart_modal")
 
