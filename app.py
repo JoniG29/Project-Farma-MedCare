@@ -7,9 +7,7 @@ import re
 
 app = Flask(__name__)
 
-# ----------------------------------------
-# 1. CONFIGURACIÓN
-# ----------------------------------------
+# --- CONFIGURACIÓN ---
 DATABASE_URI = os.environ.get('DATABASE_URL', 'sqlite:///farmacia.db')
 if DATABASE_URI.startswith("postgres://"):
     DATABASE_URI = DATABASE_URI.replace("postgres://", "postgresql://", 1)
@@ -20,9 +18,7 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'clave_local_de_prueba')
 db = SQLAlchemy(app)
 
 
-# ----------------------------------------
-# 2. MODELO DE USUARIO
-# ----------------------------------------
+# --- MODELO USER ---
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
@@ -42,9 +38,7 @@ class User(db.Model):
 with app.app_context():
     db.create_all()
 
-# ----------------------------------------
-# 3. DATOS ESTÁTICOS
-# ----------------------------------------
+# --- DATOS ESTÁTICOS ---
 COLOR_VERDE_MENTA = "#A1E8D5"
 COLOR_AZUL_CIELO = "#87CEFA"
 COLOR_GRIS_CALIDO = "#F0F0F0"
@@ -63,9 +57,7 @@ COLORES = {
 
 CATEGORIAS_MENU = ["Salud", "Bebés", "Vitaminas y Suplementos", "Ayuda"]
 
-# ----------------------------------------
-# 4. BASE DE DATOS DE PRODUCTOS
-# ----------------------------------------
+# --- BASE DE DATOS DE PRODUCTOS ---
 PRODUCTOS_DB = {
     # --- DESTACADOS ---
     'p1': {"id": "p1", "nombre": "Analgésico", "precio": 99.00, "imagen_placeholder": "Analgesico"},
@@ -73,7 +65,7 @@ PRODUCTOS_DB = {
     'p3': {"id": "p3", "nombre": "Protector Solar", "precio": 150.00, "imagen_placeholder": "ProtectorSolar"},
     'p4': {"id": "p4", "nombre": "Vitamina C", "precio": 120.00, "imagen_placeholder": "VitaminaC"},
 
-    # --- ANTIBIÓTICOS (Con Subcategorías) ---
+    # --- ANTIBIÓTICOS ---
     'a1': {"id": "a1", "nombre": "Amoxicilina 500mg", "precio": 85.00, "imagen_placeholder": "Amoxicilina",
            "subcategoria": "penicilinas"},
     'a2': {"id": "a2", "nombre": "Azitromicina 3 Tabs", "precio": 130.00, "imagen_placeholder": "Azitromicina",
@@ -91,7 +83,7 @@ PRODUCTOS_DB = {
     'a8': {"id": "a8", "nombre": "Ciprofloxacino", "precio": 95.00, "imagen_placeholder": "Ciprofloxacino",
            "subcategoria": "estomacal"},
 
-    # --- SALUD E HIGIENE (Con Subcategorías) ---
+    # --- SALUD E HIGIENE (Añadimos VISUAL 's11', 's12') ---
     's1': {"id": "s1", "nombre": "Cubrebocas KN95 (Paq. 10)", "precio": 150.00, "imagen_placeholder": "Cubrebocas",
            "subcategoria": "higiene"},
     's2': {"id": "s2", "nombre": "Gel Antibacterial 1L", "precio": 85.00, "imagen_placeholder": "GelAnti",
@@ -112,8 +104,13 @@ PRODUCTOS_DB = {
            "subcategoria": "ortopedia"},
     's10': {"id": "s10", "nombre": "Muletas de Aluminio", "precio": 450.00, "imagen_placeholder": "Muletas",
             "subcategoria": "ortopedia"},
+    # NUEVOS - VISUAL
+    's11': {"id": "s11", "nombre": "Gotas Lubricantes Ojos", "precio": 180.00, "imagen_placeholder": "GotasOjos",
+            "subcategoria": "visual"},
+    's12': {"id": "s12", "nombre": "Solución Lentes Contacto", "precio": 120.00, "imagen_placeholder": "SolucionLentes",
+            "subcategoria": "visual"},
 
-    # --- BEBÉS (Con Subcategorías) ---
+    # --- BEBÉS ---
     'b1': {"id": "b1", "nombre": "Fórmula NAN 1 (800g)", "precio": 450.00, "imagen_placeholder": "Nan1",
            "subcategoria": "formulas"},
     'b2': {"id": "b2", "nombre": "Enfamil Confort", "precio": 520.00, "imagen_placeholder": "Enfamil",
@@ -131,7 +128,7 @@ PRODUCTOS_DB = {
     'b8': {"id": "b8", "nombre": "Cereal Infantil Nestum", "precio": 45.00, "imagen_placeholder": "Cereal",
            "subcategoria": "alimentos"},
 
-    # --- VITAMINAS Y SUPLEMENTOS (Con Subcategorías) ---
+    # --- VITAMINAS ---
     'v1': {"id": "v1", "nombre": "Centrum Performance", "precio": 280.00, "imagen_placeholder": "Centrum",
            "subcategoria": "multi"},
     'v2': {"id": "v2", "nombre": "Redoxon Vitamina C", "precio": 110.00, "imagen_placeholder": "Redoxon",
@@ -146,21 +143,30 @@ PRODUCTOS_DB = {
            "subcategoria": "natural"},
 }
 
-# Listas de IDs
+# Listas de IDs (Actualizada Salud con s11, s12)
 PRODUCTOS_DESTACADOS_IDS = ['p1', 'p2', 'p3', 'p4']
 ANTIBIOTICOS_DATA_IDS = ['a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7', 'a8']
-SALUD_DATA_IDS = ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8', 's9', 's10']
+SALUD_DATA_IDS = ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8', 's9', 's10', 's11', 's12']
 BEBES_DATA_IDS = ['b1', 'b2', 'b3', 'b4', 'b5', 'b6', 'b7', 'b8']
 VITAMINAS_DATA_IDS = ['v1', 'v2', 'v3', 'v4', 'v5', 'v6']
 
+# --- NUEVA ESTRUCTURA DE CATEGORÍAS EXTENDIDAS (Con Enlaces Inteligentes) ---
 CATEGORIAS_EXTENDIDAS = [
-    ("Cuidado de la Piel", "🧴", "Productos para el rostro y cuerpo."),
-    ("Primeros Auxilios", "🩹", "Kits esenciales para emergencias."),
-    ("Nutrición Deportiva", "💪", "Proteínas, barras y suplementos."),
-    ("Medicina Natural", "🌿", "Opciones homeopáticas y herbolarias."),
-    ("Salud Visual", "👁️", "Lentes de contacto y gotas."),
-    ("Higiene Personal", "🧼", "Jabones, champús y desodorantes."),
+    {"titulo": "Cuidado de la Piel", "icono": "🧴", "desc": "Productos para el rostro y cuerpo.",
+     "endpoint": "salud_page", "filtro": "higiene"},
+    {"titulo": "Primeros Auxilios", "icono": "🩹", "desc": "Kits esenciales para emergencias.", "endpoint": "salud_page",
+     "filtro": "auxilios"},
+    {"titulo": "Nutrición Deportiva", "icono": "💪", "desc": "Proteínas, barras y suplementos.",
+     "endpoint": "vitaminas_page", "filtro": "deportiva"},
+    {"titulo": "Medicina Natural", "icono": "🌿", "desc": "Opciones homeopáticas y herbolarias.",
+     "endpoint": "vitaminas_page", "filtro": "natural"},
+    {"titulo": "Salud Visual", "icono": "👁️", "desc": "Lentes de contacto y gotas.", "endpoint": "salud_page",
+     "filtro": "visual"},
+    {"titulo": "Higiene Personal", "icono": "🧼", "desc": "Jabones, champús y desodorantes.", "endpoint": "bebes_page",
+     "filtro": "cuidado"},
 ]
+
+AYUDA_DATA = ["Contáctanos", "Preguntas Frecuentes", "Localizador de SuperFarmacias"]
 
 
 # --- SEGURIDAD ---
@@ -180,7 +186,7 @@ def inject_user():
     return dict(logged_in=session.get('logged_in'), username=session.get('username'))
 
 
-# --- RUTAS DE AUTENTICACIÓN ---
+# --- RUTAS AUTH ---
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -261,35 +267,28 @@ def profile():
     return render_template('profile.html', categorias=CATEGORIAS_MENU, colores=COLORES)
 
 
-# --- CATEGORÍA: ANTIBIÓTICOS (Con Filtros) ---
 @app.route('/pagina/Antibioticos')
 @login_required
 def antibioticos_page():
     filtro_actual = request.args.get('filtro')
     productos_anti = [PRODUCTOS_DB[pid] for pid in ANTIBIOTICOS_DATA_IDS if pid in PRODUCTOS_DB]
-
     if filtro_actual:
         productos_anti = [p for p in productos_anti if p.get('subcategoria') == filtro_actual]
-
     return render_template('antibioticos.html', categorias=CATEGORIAS_MENU, productos=productos_anti,
                            filtro_actual=filtro_actual, colores=COLORES)
 
 
-# --- CATEGORÍA: SALUD (Con Filtros) ---
 @app.route('/pagina/Salud')
 @login_required
 def salud_page():
     filtro_actual = request.args.get('filtro')
     productos_salud = [PRODUCTOS_DB[pid] for pid in SALUD_DATA_IDS if pid in PRODUCTOS_DB]
-
     if filtro_actual:
         productos_salud = [p for p in productos_salud if p.get('subcategoria') == filtro_actual]
-
     return render_template('salud.html', categorias=CATEGORIAS_MENU, productos=productos_salud,
                            filtro_actual=filtro_actual, colores=COLORES)
 
 
-# --- CATEGORÍA: BEBÉS ---
 @app.route('/pagina/Bebes')
 @login_required
 def bebes_page():
@@ -301,7 +300,6 @@ def bebes_page():
                            filtro_actual=filtro_actual, colores=COLORES)
 
 
-# --- CATEGORÍA: VITAMINAS ---
 @app.route('/pagina/VitaminasySuplementos')
 @login_required
 def vitaminas_page():
@@ -313,23 +311,6 @@ def vitaminas_page():
                            filtro_actual=filtro_actual, colores=COLORES)
 
 
-# --- CATEGORÍA: AYUDA (Con Mapa y Contacto) ---
-@app.route('/pagina/Ayuda')
-@login_required
-def ayuda_page():
-    return render_template('ayuda.html', categorias=CATEGORIAS_MENU, colores=COLORES)
-
-
-@app.route('/enviar_contacto', methods=['POST'])
-@login_required
-def enviar_contacto():
-    # Aquí recibiríamos request.form.get('mensaje')
-    # Simulamos el envío exitoso
-    flash("¡Gracias por contactarnos! Hemos recibido tu mensaje y te responderemos pronto.", "success")
-    return redirect(url_for('ayuda_page'))
-
-
-# --- CARRITO ---
 @app.route('/pagina/Carrito')
 @login_required
 def carrito_page():
@@ -354,11 +335,22 @@ def carrito_page():
                                     "item_count": item_count}, colores=COLORES)
 
 
-# --- RUTA GENÉRICA (Fallback) ---
+@app.route('/pagina/Ayuda')
+@login_required
+def ayuda_page():
+    return render_template('ayuda.html', categorias=CATEGORIAS_MENU, colores=COLORES)
+
+
+@app.route('/enviar_contacto', methods=['POST'])
+@login_required
+def enviar_contacto():
+    flash("¡Gracias por contactarnos! Hemos recibido tu mensaje y te responderemos pronto.", "success")
+    return redirect(url_for('ayuda_page'))
+
+
 @app.route('/pagina/<page_name>')
 @login_required
 def show_page(page_name):
-    # Redirecciones explícitas
     if page_name == "Antibioticos":
         return antibioticos_page()
     elif page_name == "Salud":
@@ -371,7 +363,6 @@ def show_page(page_name):
         return ayuda_page()
     elif page_name == "Carrito":
         return carrito_page()
-
     return render_template('pagina_generica.html', page_name=page_name, colores=COLORES)
 
 

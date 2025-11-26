@@ -13,6 +13,7 @@
             <a href="{{ url_for('salud_page', filtro='auxilios') }}" class="filter-btn {% if filtro_actual == 'auxilios' %}active{% endif %}">🩹 Primeros Auxilios</a>
             <a href="{{ url_for('salud_page', filtro='higiene') }}" class="filter-btn {% if filtro_actual == 'higiene' %}active{% endif %}">🧼 Higiene</a>
             <a href="{{ url_for('salud_page', filtro='ortopedia') }}" class="filter-btn {% if filtro_actual == 'ortopedia' %}active{% endif %}">🩼 Ortopedia</a>
+            <a href="{{ url_for('salud_page', filtro='visual') }}" class="filter-btn {% if filtro_actual == 'visual' %}active{% endif %}">👁️ Salud Visual</a>
         </div>
 
         {% if productos %}
