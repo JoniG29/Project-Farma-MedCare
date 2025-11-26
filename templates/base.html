@@ -2,90 +2,81 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %}Farmacia MedCare{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Farmacia MedCare{% endblock %}</title>
 
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
     <style>
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
+        :root {
+            --color-verde-menta: {{ colores.verde_menta }};
+            --color-rojo-coral: {{ colores.rojo_coral }};
+            --color-azul-oscuro: {{ colores.azul_oscuro }};
+            --color-blanco: {{ colores.blanco }};
+        }
+        .banner {
+            height: 280px;
+            background-color: var(--color-verde-menta);
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            z-index: 9999; /* Muy alto para estar encima de todo */
-        }
-
-        .modal-box {
-            background-color: var(--color-blanco);
-            padding: 30px;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 400px;
+            color: var(--color-blanco);
             text-align: center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            font-family: var(--font-texto);
         }
+        .banner h1 { font-family: var(--font-titulo); font-size: 42px; font-weight: 800; margin-bottom: 10px; }
+        .banner p { font-size: 18px; }
 
+        /* --- ESTILOS DEL MODAL (VENTANA EMERGENTE) AGREGADOS --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex; justify-content: center; align-items: center; z-index: 9999;
+        }
+        .modal-box {
+            background-color: var(--color-blanco); padding: 30px; border-radius: 12px;
+            width: 90%; max-width: 400px; text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3); font-family: sans-serif;
+        }
         .modal-buttons {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            margin-top: 20px;
+            display: flex; gap: 15px; justify-content: center; margin-top: 20px;
         }
-
         .btn-modal-pay {
-            background-color: var(--color-rojo-coral);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 6px;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 14px;
+            background-color: var(--color-rojo-coral); color: white; padding: 10px 20px;
+            border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 14px; border: none;
         }
-
         .btn-modal-continue {
-            background-color: var(--color-gris-calido);
-            color: var(--color-azul-oscuro);
-            padding: 10px 20px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 14px;
+            background-color: #f0f0f0; color: var(--color-azul-oscuro);
+            padding: 10px 20px; border-radius: 6px; border: 1px solid #ccc;
+            cursor: pointer; font-weight: bold; font-size: 14px;
         }
     </style>
 </head>
 <body>
 
     <header class="header">
-        <div class="logo" onclick="window.location.href='/'">MedCare+</div>
-
-        <input type="text" class="search-bar" placeholder="Buscar...">
-
+        <a href="{{ url_for('home') }}" class="logo">FARMACIA MEDCARE</a>
+        <input type="search" class="search-bar" placeholder="Buscar productos...">
         <div class="nav-right">
+            <a href="#">⚡️<br>Ofertas</a>
+            <a href="#">📍<br>Sucursales</a>
+            <a href="{{ url_for('carrito_page') }}">🛒<br>Carrito</a>
+
             {% if logged_in %}
-                <a href="{{ url_for('profile') }}">Perfil</a>
-                <a href="{{ url_for('carrito_page') }}">Carrito</a>
-                <a href="{{ url_for('logout') }}">Salir</a>
+                <a href="{{ url_for('profile') }}" style="width: auto; padding: 0 10px;">👤<br>Mi Cuenta</a>
+                <a href="{{ url_for('logout') }}" style="width: auto; padding: 0 10px; color: var(--color-rojo-coral);">🚪<br>Salir</a>
             {% else %}
-                <a href="{{ url_for('login') }}">Login</a>
-                <a href="{{ url_for('register') }}">Registro</a>
+                <a href="{{ url_for('login') }}" style="width: auto; padding: 0 10px;">🔑<br>Iniciar Sesión</a>
             {% endif %}
         </div>
     </header>
 
     <nav class="menu-bar">
         {% for cat in categorias %}
-        <button onclick="window.location.href='/pagina/{{ cat|replace(' ', '') }}'">{{ cat }}</button>
+            {% set target_url = '/pagina/' + cat.replace(' ', '') %}
+            <button onclick="window.location.href='{{ target_url }}'">{{ cat }} ▾</button>
         {% endfor %}
-        <button onclick="window.location.href='/pagina/Antibioticos'">Antibióticos</button>
+        <button onclick="window.location.href='/pagina/Antibioticos'">Antibióticos ▾</button>
     </nav>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -96,9 +87,8 @@
                     <div id="cartModal" class="modal-overlay">
                         <div class="modal-box">
                             <div style="font-size: 40px; margin-bottom: 10px;">✅</div>
-                            <h3 style="color: var(--color-azul-oscuro); margin-top: 0; font-family: var(--font-titulo);">¡Agregado!</h3>
+                            <h3 style="color: var(--color-azul-oscuro); margin-top: 0;">¡Producto Agregado!</h3>
                             <p style="color: #666;">{{ message }}</p>
-
                             <div class="modal-buttons">
                                 <button class="btn-modal-continue" onclick="closeModal()">Seguir Comprando</button>
                                 <a href="{{ url_for('carrito_page') }}" class="btn-modal-pay">Ir al Carrito</a>
@@ -107,7 +97,7 @@
                     </div>
 
                 {% else %}
-                    <div style="padding: 10px; text-align: center; color: white; font-weight: bold; font-family: var(--font-texto);
+                    <div style="padding: 10px; text-align: center; color: white; font-weight: bold;
                         {% if category == 'error' %}background-color: var(--color-rojo-coral);
                         {% else %}background-color: var(--color-verde-menta); color: var(--color-azul-oscuro);{% endif %}">
                         {{ message }}
@@ -118,16 +108,21 @@
         {% endif %}
     {% endwith %}
 
-    {% block content %}{% endblock %}
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
 
     <footer class="footer">
-        <p>&copy; 2025 Farmacia MedCare. Todos los derechos reservados.</p>
+        © 2025 Farmacia MedCare. Todos los derechos reservados.
     </footer>
 
     <script>
         function closeModal() {
-            document.getElementById('cartModal').style.display = 'none';
+            const modal = document.getElementById('cartModal');
+            if(modal) modal.style.display = 'none';
         }
     </script>
+
 </body>
 </html>
