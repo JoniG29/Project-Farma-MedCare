@@ -2,66 +2,143 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Farmacia MedCare{% endblock %}</title>
-
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
 
     <style>
-        :root {
-            --color-verde-menta: {{ colores.verde_menta }};
-            --color-rojo-coral: {{ colores.rojo_coral }};
-            --color-azul-oscuro: {{ colores.azul_oscuro }};
-            --color-blanco: {{ colores.blanco }};
-        }
-        .banner {
-            height: 280px;
-            background-color: var(--color-verde-menta);
+        /* El fondo oscuro que cubre la pantalla */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); /* Semi-transparente */
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
-            color: var(--color-blanco);
-            text-align: center;
+            z-index: 1000; /* Asegura que esté encima de todo */
         }
-        .banner h1 { font-family: var(--font-titulo); font-size: 42px; font-weight: 800; margin-bottom: 10px; }
-        .banner p { font-size: 18px; }
 
+        /* La cajita blanca del mensaje */
+        .modal-box {
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .btn-modal-pay {
+            background-color: var(--color-rojo-coral);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .btn-modal-continue {
+            background-color: var(--color-gris-calido);
+            color: var(--color-azul-oscuro);
+            padding: 10px 20px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body>
 
     <header class="header">
-        <a href="{{ url_for('home') }}" class="logo">FARMACIA MEDCARE</a>
-        <input type="search" class="search-bar" placeholder="Buscar productos...">
+        <div class="logo" onclick="window.location.href='/'">MedCare+</div>
+        <input type="text" class="search-bar" placeholder="Buscar medicamentos, marcas y más...">
         <div class="nav-right">
-            <a href="#">⚡️<br>Ofertas</a>
-            <a href="#">📍<br>Sucursales</a>
-            <a href="{{ url_for('carrito_page') }}">🛒<br>Carrito</a>
-
             {% if logged_in %}
-                <a href="{{ url_for('profile') }}" style="width: auto; padding: 0 10px;">👤<br>Mi Cuenta</a>
+                <span style="color: white; font-size: 12px; margin-right: 10px;">Hola, {{ username }}</span>
+                <a href="{{ url_for('profile') }}">Perfil</a>
+                <a href="{{ url_for('carrito_page') }}">Carrito</a>
             {% else %}
-                <a href="{{ url_for('login') }}" style="width: auto; padding: 0 10px;">🔑<br>Iniciar Sesión</a>
+                <a href="{{ url_for('login') }}">Ingresar</a>
+                <a href="{{ url_for('register') }}">Registro</a>
             {% endif %}
         </div>
     </header>
 
     <nav class="menu-bar">
         {% for cat in categorias %}
-            {% set target_url = '/pagina/' + cat.replace(' ', '') %}
-            <button onclick="window.location.href='{{ target_url }}'">{{ cat }} ▾</button>
+        <button onclick="window.location.href='/pagina/{{ cat|replace(' ', '') }}'">{{ cat }}</button>
         {% endfor %}
+        <button onclick="window.location.href='/pagina/Antibioticos'">Antibióticos</button>
     </nav>
 
-    <main>
-        {% block content %}
-        {% endblock %}
-    </main>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+
+                {% if category == 'cart_modal' %}
+                    <div id="cartModal" class="modal-overlay">
+                        <div class="modal-box">
+                            <div style="font-size: 40px; margin-bottom: 10px;">✅</div>
+                            <h3 style="color: var(--color-azul-oscuro); margin-top: 0;">¡Producto Agregado!</h3>
+                            <p style="color: #666; font-size: 14px;">{{ message }}</p>
+
+                            <div class="modal-buttons">
+                                <button class="btn-modal-continue" onclick="closeModal()">
+                                    Seguir Comprando
+                                </button>
+
+                                <a href="{{ url_for('carrito_page') }}" class="btn-modal-pay">
+                                    Proceder al Pago
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                {% else %}
+                    <div style="padding: 15px; text-align: center; margin-bottom: 0;
+                        {% if category == 'error' %}background-color: #ffdddd; color: red;{% else %}background-color: #ddffdd; color: green;{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endif %}
+
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+
+    {% block content %}{% endblock %}
 
     <footer class="footer">
-        © 2025 Farmacia MedCare. Todos los derechos reservados.
+        <p>&copy; 2024 Farmacia MedCare. Todos los derechos reservados.</p>
     </footer>
 
+    <script>
+        function closeModal() {
+            const modal = document.getElementById('cartModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+    </script>
 </body>
 </html>

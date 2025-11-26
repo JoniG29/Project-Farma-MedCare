@@ -367,9 +367,9 @@ def add_to_cart(product_id):
     session.modified = True
 
     producto = PRODUCTOS_DB[product_id]
-    flash(f"¡Se añadieron {cantidad} unidad(es) de '{producto['nombre']}' al carrito!", "success")
+    mensaje = f"Has añadido {cantidad} x {producto['nombre']} al carrito."
+    flash(mensaje, "cart_modal")
 
-    # Regresamos a la página anterior
     return redirect(request.referrer or url_for('home'))
 
 
