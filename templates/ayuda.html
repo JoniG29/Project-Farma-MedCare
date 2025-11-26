@@ -40,117 +40,188 @@
 
         <div id="FAQ" class="tab-content" style="display: none;">
             <div class="faq-container">
-                
-                <details class="faq-item">
-                    <summary>¿Cuánto tiempo tarda en llegar mi pedido?</summary>
-                    <p>Nuestros envíos estándar tardan entre 24 y 48 horas hábiles. Si elegiste envío express, llega el mismo día.</p>
-                </details>
-
-                <details class="faq-item">
-                    <summary>¿Aceptan devoluciones en medicamentos?</summary>
-                    <p>Por seguridad sanitaria, no aceptamos devoluciones en medicamentos, salvo que el producto esté dañado o caducado.</p>
-                </details>
-
-                <details class="faq-item">
-                    <summary>¿Cómo puedo facturar mi compra?</summary>
-                    <p>Al recibir tu correo de confirmación de compra, encontrarás un enlace directo al portal de facturación.</p>
-                </details>
-
-                <details class="faq-item">
-                    <summary>¿Tienen servicio las 24 horas?</summary>
-                    <p>Sí, nuestra tienda en línea funciona 24/7. Las entregas nocturnas tienen un costo adicional.</p>
-                </details>
-
+                <details class="faq-item"><summary>¿Cuánto tiempo tarda en llegar mi pedido?</summary><p>Nuestros envíos estándar tardan entre 24 y 48 horas hábiles.</p></details>
+                <details class="faq-item"><summary>¿Aceptan devoluciones?</summary><p>Por seguridad sanitaria, no aceptamos devoluciones en medicamentos, salvo defecto de fábrica.</p></details>
+                <details class="faq-item"><summary>¿Cómo facturar?</summary><p>El enlace de facturación llega a tu correo al confirmar la compra.</p></details>
+                <details class="faq-item"><summary>¿Horario de servicio?</summary><p>La tienda en línea opera 24/7. Soporte telefónico de 8am a 8pm.</p></details>
             </div>
         </div>
 
         <div id="Mapa" class="tab-content" style="display: none;">
+
             <div style="background-color: #eef; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ccd;">
-                <strong>Nota Escolar:</strong> Este mapa muestra sucursales de <em>Farmacias Guadalajara</em> en Guadalajara, Jalisco, como referencia funcional del localizador.
+                <strong>Localizador de Sucursales:</strong> Selecciona tu estado para ver las farmacias disponibles.
             </div>
+
+            <div style="margin-bottom: 15px; text-align: left;">
+                <label style="font-weight: bold; margin-right: 10px;">Selecciona tu Estado:</label>
+                <select id="selectorEstado" onchange="cambiarEstado()" style="padding: 8px; border-radius: 5px; border: 1px solid #ccc; width: 250px;">
+                    <option value="Durango" selected>Durango</option>
+                    <option disabled>------------------</option>
+                    <option value="Aguascalientes">Aguascalientes</option>
+                    <option value="BajaCalifornia">Baja California</option>
+                    <option value="BajaCaliforniaSur">Baja California Sur</option>
+                    <option value="Campeche">Campeche</option>
+                    <option value="Chiapas">Chiapas</option>
+                    <option value="Chihuahua">Chihuahua</option>
+                    <option value="CDMX">Ciudad de México</option>
+                    <option value="Coahuila">Coahuila</option>
+                    <option value="Colima">Colima</option>
+                    <option value="EstadoDeMexico">Estado de México</option>
+                    <option value="Guanajuato">Guanajuato</option>
+                    <option value="Guerrero">Guerrero</option>
+                    <option value="Hidalgo">Hidalgo</option>
+                    <option value="Jalisco">Jalisco</option>
+                    <option value="Michoacan">Michoacán</option>
+                    <option value="Morelos">Morelos</option>
+                    <option value="Nayarit">Nayarit</option>
+                    <option value="NuevoLeon">Nuevo León</option>
+                    <option value="Oaxaca">Oaxaca</option>
+                    <option value="Puebla">Puebla</option>
+                    <option value="Queretaro">Querétaro</option>
+                    <option value="QuintanaRoo">Quintana Roo</option>
+                    <option value="SanLuisPotosi">San Luis Potosí</option>
+                    <option value="Sinaloa">Sinaloa</option>
+                    <option value="Sonora">Sonora</option>
+                    <option value="Tabasco">Tabasco</option>
+                    <option value="Tamaulipas">Tamaulipas</option>
+                    <option value="Tlaxcala">Tlaxcala</option>
+                    <option value="Veracruz">Veracruz</option>
+                    <option value="Yucatan">Yucatán</option>
+                    <option value="Zacatecas">Zacatecas</option>
+                </select>
+            </div>
+
             <div id="map" style="height: 450px; width: 100%; border-radius: 12px; z-index: 1;"></div>
         </div>
 
     </div>
 
     <style>
-        .tabs-container {
-            display: flex; justify-content: center; gap: 10px; margin-bottom: 30px; flex-wrap: wrap;
-        }
-        .tab-btn {
-            padding: 12px 25px; background-color: var(--color-gris-calido); border: none;
-            border-radius: 25px; cursor: pointer; font-weight: bold; color: #666; transition: 0.3s;
-        }
-        .tab-btn.active, .tab-btn:hover {
-            background-color: var(--color-azul-oscuro); color: white;
-        }
-        .form-box {
-            max-width: 500px; margin: 0 auto; background: white; padding: 30px;
-            border-radius: 10px; border: 1px solid #ddd; text-align: left;
-        }
-        .input-field {
-            width: 100%; padding: 10px; margin: 5px 0 15px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box;
-        }
-        .faq-item {
-            background-color: white; border: 1px solid #ddd; margin-bottom: 10px;
-            border-radius: 8px; padding: 15px; text-align: left; cursor: pointer;
-        }
+        .tabs-container { display: flex; justify-content: center; gap: 10px; margin-bottom: 30px; flex-wrap: wrap; }
+        .tab-btn { padding: 12px 25px; background-color: var(--color-gris-calido); border: none; border-radius: 25px; cursor: pointer; font-weight: bold; color: #666; transition: 0.3s; }
+        .tab-btn.active, .tab-btn:hover { background-color: var(--color-azul-oscuro); color: white; }
+        .form-box { max-width: 500px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; border: 1px solid #ddd; text-align: left; }
+        .input-field { width: 100%; padding: 10px; margin: 5px 0 15px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        .faq-item { background-color: white; border: 1px solid #ddd; margin-bottom: 10px; border-radius: 8px; padding: 15px; text-align: left; cursor: pointer; }
         .faq-item summary { font-weight: bold; color: var(--color-azul-oscuro); }
         .faq-item p { margin-top: 10px; color: #555; line-height: 1.5; }
     </style>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    
-    <script>
-        // --- 1. CONFIGURACIÓN DEL MAPA ---
-        // Coordenadas de Guadalajara Centro
-        var map = L.map('map').setView([20.6767, -103.3475], 13);
 
-        // Capa del mapa (OpenStreetMap - Gratis)
+    <script>
+        // --- 1. CONFIGURACIÓN INICIAL DEL MAPA (Centrado en Durango) ---
+        var map = L.map('map').setView([24.0277, -104.6532], 13);
+
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; OpenStreetMap contributors'
         }).addTo(map);
 
-        // --- 2. MARCADORES DE FARMACIAS GUADALAJARA ---
-        var farmacias = [
-            {lat: 20.6736, lon: -103.3440, nombre: "Farmacia Guadalajara - Centro Histórico"},
-            {lat: 20.6800, lon: -103.3500, nombre: "Farmacia Guadalajara - Av. Alcalde"},
-            {lat: 20.6700, lon: -103.3600, nombre: "Farmacia Guadalajara - Av. Vallarta"},
-            {lat: 20.6650, lon: -103.3300, nombre: "Farmacia Guadalajara - Revolución"}
+        var capaMarcadores = L.layerGroup().addTo(map);
+
+        // --- 2. DATOS REALES DE DURANGO Y DEMO DE OTROS ---
+        var datosFarmacias = [
+            // === DURANGO (COORDENADAS REALES) ===
+            {estado: "Durango", lat: 24.0249, lon: -104.6703, nombre: "Farmacia GDL - Centro Histórico"},
+            {estado: "Durango", lat: 24.0335, lon: -104.6633, nombre: "Farmacia GDL - Felipe Pescador"},
+            {estado: "Durango", lat: 24.0150, lon: -104.6550, nombre: "Farmacia GDL - Barrio de Analco"},
+            {estado: "Durango", lat: 24.0500, lon: -104.6300, nombre: "Farmacia GDL - Ciudad Industrial"},
+            // Santiago Papasquiaro (Real aprox)
+            {estado: "Durango", lat: 25.0435, lon: -105.4215, nombre: "Farmacia GDL - Santiago Papasquiaro Centro"},
+
+            // === JALISCO (DEMO) ===
+            {estado: "Jalisco", lat: 20.6736, lon: -103.3440, nombre: "Sucursal Centro Histórico"},
+            {estado: "Jalisco", lat: 20.6800, lon: -103.3500, nombre: "Sucursal Av. Alcalde"},
+
+            // === CDMX (DEMO) ===
+            {estado: "CDMX", lat: 19.4326, lon: -99.1332, nombre: "Sucursal Zócalo CDMX"},
+            {estado: "CDMX", lat: 19.4270, lon: -99.1677, nombre: "Sucursal Reforma Ángel"},
+
+            // === NUEVO LEÓN (DEMO) ===
+            {estado: "NuevoLeon", lat: 25.6698, lon: -100.3150, nombre: "Sucursal Macroplaza MTY"},
+            {estado: "NuevoLeon", lat: 25.6515, lon: -100.3569, nombre: "Sucursal San Pedro"},
         ];
 
-        // Crear icono personalizado (Opcional, usa el default azul)
-        farmacias.forEach(function(sucursal) {
-            L.marker([sucursal.lat, sucursal.lon])
-                .addTo(map)
-                .bindPopup("<b>" + sucursal.nombre + "</b><br>Horario: 24 Horas");
-        });
+        // --- 3. VISTAS DE LOS 32 ESTADOS (Coordenadas de la capital de cada uno) ---
+        var vistasEstados = {
+            "Durango": {lat: 24.0277, lon: -104.6532, zoom: 13},
+            "Aguascalientes": {lat: 21.8853, lon: -102.2916, zoom: 13},
+            "BajaCalifornia": {lat: 32.5149, lon: -117.0382, zoom: 12},
+            "BajaCaliforniaSur": {lat: 24.1426, lon: -110.3127, zoom: 13},
+            "Campeche": {lat: 19.8301, lon: -90.5349, zoom: 13},
+            "Chiapas": {lat: 16.7569, lon: -93.1292, zoom: 13},
+            "Chihuahua": {lat: 28.6320, lon: -106.0691, zoom: 12},
+            "CDMX": {lat: 19.4326, lon: -99.1332, zoom: 12},
+            "Coahuila": {lat: 25.4145, lon: -100.9946, zoom: 13},
+            "Colima": {lat: 19.2433, lon: -103.7247, zoom: 14},
+            "EstadoDeMexico": {lat: 19.2826, lon: -99.6557, zoom: 13},
+            "Guanajuato": {lat: 21.0190, lon: -101.2574, zoom: 13},
+            "Guerrero": {lat: 17.5475, lon: -99.5005, zoom: 13},
+            "Hidalgo": {lat: 20.1011, lon: -98.7591, zoom: 13},
+            "Jalisco": {lat: 20.6597, lon: -103.3496, zoom: 12},
+            "Michoacan": {lat: 19.7060, lon: -101.1950, zoom: 13},
+            "Morelos": {lat: 18.9242, lon: -99.2216, zoom: 13},
+            "Nayarit": {lat: 21.5108, lon: -104.8940, zoom: 13},
+            "NuevoLeon": {lat: 25.6866, lon: -100.3161, zoom: 12},
+            "Oaxaca": {lat: 17.0732, lon: -96.7266, zoom: 13},
+            "Puebla": {lat: 19.0414, lon: -98.2063, zoom: 13},
+            "Queretaro": {lat: 20.5888, lon: -100.3899, zoom: 13},
+            "QuintanaRoo": {lat: 18.5002, lon: -88.3000, zoom: 13}, // Chetumal
+            "SanLuisPotosi": {lat: 22.1565, lon: -100.9855, zoom: 13},
+            "Sinaloa": {lat: 24.8059, lon: -107.3944, zoom: 13},
+            "Sonora": {lat: 29.0730, lon: -110.9559, zoom: 13},
+            "Tabasco": {lat: 17.9895, lon: -92.9475, zoom: 13},
+            "Tamaulipas": {lat: 23.7369, lon: -99.1411, zoom: 13},
+            "Tlaxcala": {lat: 19.3182, lon: -98.2375, zoom: 14},
+            "Veracruz": {lat: 19.5438, lon: -96.9102, zoom: 13}, // Xalapa
+            "Yucatan": {lat: 20.9674, lon: -89.5926, zoom: 13},
+            "Zacatecas": {lat: 22.7709, lon: -102.5832, zoom: 13}
+        };
 
-        // --- 3. LÓGICA DE PESTAÑAS ---
+        // --- 4. FUNCIÓN PARA CAMBIAR ESTADO ---
+        function cambiarEstado() {
+            var selector = document.getElementById("selectorEstado");
+            var estadoSeleccionado = selector.value;
+
+            // 1. Borrar marcadores actuales
+            capaMarcadores.clearLayers();
+
+            // 2. Filtrar y agregar nuevos marcadores
+            datosFarmacias.forEach(function(sucursal) {
+                if(sucursal.estado === estadoSeleccionado) {
+                    L.marker([sucursal.lat, sucursal.lon])
+                        .addTo(capaMarcadores)
+                        .bindPopup("<b>" + sucursal.nombre + "</b><br>Horario: 24 Horas");
+                }
+            });
+
+            // 3. Mover la cámara al nuevo estado
+            var vista = vistasEstados[estadoSeleccionado];
+            if(vista) {
+                map.flyTo([vista.lat, vista.lon], vista.zoom);
+            }
+        }
+
+        // --- 5. LÓGICA DE PESTAÑAS ---
         function openTab(evt, tabName) {
             var i, tabcontent, tablinks;
-            
-            // Ocultar todo el contenido
             tabcontent = document.getElementsByClassName("tab-content");
-            for (i = 0; i < tabcontent.length; i++) {
-                tabcontent[i].style.display = "none";
-            }
-
-            // Quitar clase active de los botones
+            for (i = 0; i < tabcontent.length; i++) { tabcontent[i].style.display = "none"; }
             tablinks = document.getElementsByClassName("tab-btn");
-            for (i = 0; i < tablinks.length; i++) {
-                tablinks[i].className = tablinks[i].className.replace(" active", "");
-            }
-
-            // Mostrar el tab actual y activar botón
+            for (i = 0; i < tablinks.length; i++) { tablinks[i].className = tablinks[i].className.replace(" active", ""); }
             document.getElementById(tabName).style.display = "block";
             evt.currentTarget.className += " active";
 
-            // TRUCO IMPORTANTE PARA EL MAPA:
-            // Leaflet necesita recalcular su tamaño cuando se hace visible
             if (tabName === 'Mapa') {
-                setTimeout(function(){ map.invalidateSize(); }, 200);
+                setTimeout(function(){
+                    map.invalidateSize();
+                    cambiarEstado(); // Asegurar que Durango cargue al abrir
+                }, 200);
             }
         }
+
+        // Inicializar
+        cambiarEstado();
     </script>
 {% endblock %}
