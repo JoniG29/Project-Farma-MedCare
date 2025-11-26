@@ -9,30 +9,28 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
 
     <style>
-        /* El fondo oscuro que cubre la pantalla */
         .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5); /* Semi-transparente */
+            background-color: rgba(0, 0, 0, 0.5);
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 1000; /* Asegura que esté encima de todo */
+            z-index: 9999; /* Muy alto para estar encima de todo */
         }
 
-        /* La cajita blanca del mensaje */
         .modal-box {
-            background-color: white;
+            background-color: var(--color-blanco);
             padding: 30px;
             border-radius: 12px;
             width: 90%;
             max-width: 400px;
             text-align: center;
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            animation: fadeIn 0.3s ease;
+            font-family: var(--font-texto);
         }
 
         .modal-buttons {
@@ -46,24 +44,21 @@
             background-color: var(--color-rojo-coral);
             color: white;
             padding: 10px 20px;
-            border-radius: 5px;
+            border-radius: 6px;
             text-decoration: none;
             font-weight: bold;
+            font-size: 14px;
         }
 
         .btn-modal-continue {
             background-color: var(--color-gris-calido);
             color: var(--color-azul-oscuro);
             padding: 10px 20px;
-            border-radius: 5px;
+            border-radius: 6px;
             border: 1px solid #ccc;
             cursor: pointer;
             font-weight: bold;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
+            font-size: 14px;
         }
     </style>
 </head>
@@ -71,14 +66,16 @@
 
     <header class="header">
         <div class="logo" onclick="window.location.href='/'">MedCare+</div>
-        <input type="text" class="search-bar" placeholder="Buscar medicamentos, marcas y más...">
+
+        <input type="text" class="search-bar" placeholder="Buscar...">
+
         <div class="nav-right">
             {% if logged_in %}
-                <span style="color: white; font-size: 12px; margin-right: 10px;">Hola, {{ username }}</span>
                 <a href="{{ url_for('profile') }}">Perfil</a>
                 <a href="{{ url_for('carrito_page') }}">Carrito</a>
+                <a href="{{ url_for('logout') }}">Salir</a>
             {% else %}
-                <a href="{{ url_for('login') }}">Ingresar</a>
+                <a href="{{ url_for('login') }}">Login</a>
                 <a href="{{ url_for('register') }}">Registro</a>
             {% endif %}
         </div>
@@ -99,24 +96,20 @@
                     <div id="cartModal" class="modal-overlay">
                         <div class="modal-box">
                             <div style="font-size: 40px; margin-bottom: 10px;">✅</div>
-                            <h3 style="color: var(--color-azul-oscuro); margin-top: 0;">¡Producto Agregado!</h3>
-                            <p style="color: #666; font-size: 14px;">{{ message }}</p>
+                            <h3 style="color: var(--color-azul-oscuro); margin-top: 0; font-family: var(--font-titulo);">¡Agregado!</h3>
+                            <p style="color: #666;">{{ message }}</p>
 
                             <div class="modal-buttons">
-                                <button class="btn-modal-continue" onclick="closeModal()">
-                                    Seguir Comprando
-                                </button>
-
-                                <a href="{{ url_for('carrito_page') }}" class="btn-modal-pay">
-                                    Proceder al Pago
-                                </a>
+                                <button class="btn-modal-continue" onclick="closeModal()">Seguir Comprando</button>
+                                <a href="{{ url_for('carrito_page') }}" class="btn-modal-pay">Ir al Carrito</a>
                             </div>
                         </div>
                     </div>
 
                 {% else %}
-                    <div style="padding: 15px; text-align: center; margin-bottom: 0;
-                        {% if category == 'error' %}background-color: #ffdddd; color: red;{% else %}background-color: #ddffdd; color: green;{% endif %}">
+                    <div style="padding: 10px; text-align: center; color: white; font-weight: bold; font-family: var(--font-texto);
+                        {% if category == 'error' %}background-color: var(--color-rojo-coral);
+                        {% else %}background-color: var(--color-verde-menta); color: var(--color-azul-oscuro);{% endif %}">
                         {{ message }}
                     </div>
                 {% endif %}
@@ -125,19 +118,15 @@
         {% endif %}
     {% endwith %}
 
-
     {% block content %}{% endblock %}
 
     <footer class="footer">
-        <p>&copy; 2024 Farmacia MedCare. Todos los derechos reservados.</p>
+        <p>&copy; 2025 Farmacia MedCare. Todos los derechos reservados.</p>
     </footer>
 
     <script>
         function closeModal() {
-            const modal = document.getElementById('cartModal');
-            if (modal) {
-                modal.style.display = 'none';
-            }
+            document.getElementById('cartModal').style.display = 'none';
         }
     </script>
 </body>
