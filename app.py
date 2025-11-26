@@ -81,19 +81,41 @@ PRODUCTOS_DB = {
     'a3': {"id": "a3", "nombre": "Ciprofloxacino", "precio": 110.00, "imagen_placeholder": "Ciprofloxacino"},
     'a4': {"id": "a4", "nombre": "Metronidazol", "precio": 75.00, "imagen_placeholder": "Metronidazol"},
 
-    # --- NUEVOS: PRODUCTOS DE SALUD ---
+    # Salud
     's1': {"id": "s1", "nombre": "Cubrebocas KN95 (Paq. 10)", "precio": 150.00, "imagen_placeholder": "Cubrebocas"},
     's2': {"id": "s2", "nombre": "Gel Antibacterial 1L", "precio": 85.00, "imagen_placeholder": "GelAnti"},
     's3': {"id": "s3", "nombre": "Termómetro Digital", "precio": 220.00, "imagen_placeholder": "Termometro"},
     's4': {"id": "s4", "nombre": "Alcohol Etílico 70°", "precio": 45.00, "imagen_placeholder": "Alcohol"},
     's5': {"id": "s5", "nombre": "Vendas Elásticas", "precio": 12.00, "imagen_placeholder": "Vendas"},
     's6': {"id": "s6", "nombre": "Oxímetro de Pulso", "precio": 350.00, "imagen_placeholder": "Oximetro"},
+
+    # --- NUEVOS: PRODUCTOS DE BEBÉS (Con subcategoría) ---
+    'b1': {"id": "b1", "nombre": "Fórmula NAN 1 (800g)", "precio": 450.00, "imagen_placeholder": "Nan1",
+           "subcategoria": "formulas"},
+    'b2': {"id": "b2", "nombre": "Enfamil Confort", "precio": 520.00, "imagen_placeholder": "Enfamil",
+           "subcategoria": "formulas"},
+
+    'b3': {"id": "b3", "nombre": "Pañales Huggies RN (30pz)", "precio": 180.00, "imagen_placeholder": "HuggiesRN",
+           "subcategoria": "panales"},
+    'b4': {"id": "b4", "nombre": "Pañales BioBaby Etapa 3", "precio": 210.00, "imagen_placeholder": "BioBaby",
+           "subcategoria": "panales"},
+
+    'b5': {"id": "b5", "nombre": "Shampoo Ricitos de Oro", "precio": 65.00, "imagen_placeholder": "ShampooBebe",
+           "subcategoria": "cuidado"},
+    'b6': {"id": "b6", "nombre": "Toallitas Húmedas (Paq. 4)", "precio": 120.00, "imagen_placeholder": "Toallitas",
+           "subcategoria": "cuidado"},
+
+    'b7': {"id": "b7", "nombre": "Gerber de Manzana", "precio": 18.00, "imagen_placeholder": "Gerber",
+           "subcategoria": "alimentos"},
+    'b8': {"id": "b8", "nombre": "Cereal Infantil Nestum", "precio": 45.00, "imagen_placeholder": "Cereal",
+           "subcategoria": "alimentos"},
 }
 
 # Listas de IDs por categoría
 PRODUCTOS_DESTACADOS_IDS = ['p1', 'p2', 'p3', 'p4']
 ANTIBIOTICOS_DATA_IDS = ['a1', 'a2', 'a3', 'a4']
 SALUD_DATA_IDS = ['s1', 's2', 's3', 's4', 's5', 's6']
+BEBES_DATA_IDS = ['b1', 'b2', 'b3', 'b4', 'b5', 'b6', 'b7', 'b8']
 
 CATEGORIAS_EXTENDIDAS = [
     ("Cuidado de la Piel", "🧴", "Productos para el rostro y cuerpo."),
@@ -104,6 +126,7 @@ CATEGORIAS_EXTENDIDAS = [
     ("Higiene Personal", "🧼", "Jabones, champús y desodorantes."),
 ]
 
+# Datos genéricos (ya no se usan para Bebés, pero los dejamos por compatibilidad)
 BEBES_DATA = ["Fórmulas Infantiles", "Pañales", "Cuidado del Bebé", "Alimentos para Bebé"]
 VITAMINAS_SUPLEMENTOS_DATA = ["Complementos Alimenticios", "Multivitaminas", "Suplementos Alimenticios"]
 AYUDA_DATA = ["Contáctanos", "Preguntas Frecuentes", "Localizador de SuperFarmacias"]
@@ -219,7 +242,6 @@ def forgot_password():
 def logout():
     session.pop('logged_in', None)
     session.pop('username', None)
-    # session.pop('cart', None) # Opcional: limpiar carrito al salir
     return redirect(url_for('login'))
 
 
@@ -230,9 +252,7 @@ def logout():
 @app.route('/')
 @login_required
 def home():
-    # Convertimos los IDs en objetos completos
     productos_completos = [PRODUCTOS_DB[pid] for pid in PRODUCTOS_DESTACADOS_IDS if pid in PRODUCTOS_DB]
-
     return render_template(
         'index.html',
         categorias=CATEGORIAS_MENU,
@@ -245,11 +265,7 @@ def home():
 @app.route('/profile')
 @login_required
 def profile():
-    return render_template(
-        'profile.html',
-        categorias=CATEGORIAS_MENU,
-        colores=COLORES
-    )
+    return render_template('profile.html', categorias=CATEGORIAS_MENU, colores=COLORES)
 
 
 @app.route('/pagina/Antibioticos')
@@ -264,7 +280,6 @@ def antibioticos_page():
     )
 
 
-# --- NUEVA RUTA PARA SALUD ---
 @app.route('/pagina/Salud')
 @login_required
 def salud_page():
@@ -277,7 +292,27 @@ def salud_page():
     )
 
 
-# -----------------------------
+# --- NUEVA RUTA PARA BEBÉS CON FILTRO ---
+@app.route('/pagina/Bebes')
+@login_required
+def bebes_page():
+    # 1. Obtenemos el filtro de la URL (si existe)
+    filtro_actual = request.args.get('filtro')
+
+    # 2. Obtenemos TODOS los productos de bebés primero
+    productos_bebes = [PRODUCTOS_DB[pid] for pid in BEBES_DATA_IDS if pid in PRODUCTOS_DB]
+
+    # 3. Si hay filtro, dejamos solo los que coincidan con la subcategoría
+    if filtro_actual:
+        productos_bebes = [p for p in productos_bebes if p.get('subcategoria') == filtro_actual]
+
+    return render_template(
+        'bebes.html',
+        categorias=CATEGORIAS_MENU,
+        productos=productos_bebes,
+        filtro_actual=filtro_actual,
+        colores=COLORES
+    )
 
 
 @app.route('/pagina/Carrito')
@@ -331,15 +366,17 @@ def carrito_page():
 @login_required
 def show_page(page_name):
     page_map = {
-        "Bebés": {"data": BEBES_DATA, "title": "Bebés"},
         "VitaminasySuplementos": {"data": VITAMINAS_SUPLEMENTOS_DATA, "title": "Vitaminas y Suplementos"},
         "Ayuda": {"data": AYUDA_DATA, "title": "Ayuda"},
     }
 
+    # Redirecciones a rutas específicas
     if page_name == "Antibioticos":
         return antibioticos_page()
     elif page_name == "Salud":
         return salud_page()
+    elif page_name == "Bebés":
+        return bebes_page()  # Flask prefiere la ruta explícita, pero esto ayuda
     elif page_name == "Carrito":
         return carrito_page()
 
@@ -385,7 +422,6 @@ def add_to_cart(product_id):
 
     producto = PRODUCTOS_DB[product_id]
 
-    # MODAL FLASH
     mensaje = f"Has añadido {cantidad} x {producto['nombre']} al carrito."
     flash(mensaje, "cart_modal")
 

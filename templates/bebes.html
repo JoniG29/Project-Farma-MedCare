@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Mundo Bebé | Farmacia MedCare{% endblock %}
+
+{% block content %}
+    <div class="page-container">
+        <h1 class="section-title">MUNDO BEBÉ</h1>
+        <p class="description-label">Todo para el cuidado y crecimiento de tu pequeño.</p>
+
+        <div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 40px;">
+            
+            <a href="{{ url_for('bebes_page') }}" 
+               class="filter-btn {% if not filtro_actual %}active{% endif %}">
+               Todo
+            </a>
+
+            <a href="{{ url_for('bebes_page', filtro='formulas') }}" 
+               class="filter-btn {% if filtro_actual == 'formulas' %}active{% endif %}">
+               🍼 Fórmulas
+            </a>
+
+            <a href="{{ url_for('bebes_page', filtro='panales') }}" 
+               class="filter-btn {% if filtro_actual == 'panales' %}active{% endif %}">
+               🧷 Pañales
+            </a>
+
+            <a href="{{ url_for('bebes_page', filtro='cuidado') }}" 
+               class="filter-btn {% if filtro_actual == 'cuidado' %}active{% endif %}">
+               🧼 Cuidado
+            </a>
+
+            <a href="{{ url_for('bebes_page', filtro='alimentos') }}" 
+               class="filter-btn {% if filtro_actual == 'alimentos' %}active{% endif %}">
+               🍎 Alimentos
+            </a>
+
+        </div>
+
+        {% if productos %}
+            <div class="products-grid">
+                {% for prod in productos %}
+                <div class="product-card" style="width: 280px; height: 360px;">
+                    <div class="product-card-image">
+                        {{ prod.imagen_placeholder }} 
+                    </div>
+                    <h3>{{ prod.nombre }}</h3>
+                    <p class="price">${{ prod.precio }}</p>
+                    
+                    <form action="{{ url_for('add_to_cart', product_id=prod.id) }}" method="POST" 
+                          style="display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 10px;">
+                        
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <label style="font-size: 13px; color: #666;">Cant:</label>
+                            <input type="number" name="quantity" value="1" min="1" max="20" 
+                                   style="width: 50px; padding: 5px; border-radius: 5px; border: 1px solid #ccc; text-align: center;">
+                        </div>
+                        
+                        <button type="submit" class="btn-add" style="width: 100%; cursor: pointer;">
+                            Añadir al carrito
+                        </button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div style="padding: 50px; text-align: center; color: #666;">
+                <p>No se encontraron productos en esta categoría por el momento.</p>
+                <a href="{{ url_for('bebes_page') }}" style="color: var(--color-rojo-coral); font-weight: bold;">Ver todos los productos</a>
+            </div>
+        {% endif %}
+
+    </div>
+
+    <style>
+        .filter-btn {
+            padding: 10px 20px;
+            border-radius: 20px;
+            text-decoration: none;
+            color: var(--color-azul-oscuro);
+            background-color: var(--color-gris-calido);
+            border: 1px solid #ddd;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .filter-btn:hover {
+            background-color: #e0e0e0;
+            transform: translateY(-2px);
+        }
+
+        /* Estilo cuando el botón está activo */
+        .filter-btn.active {
+            background-color: var(--color-azul-cielo);
+            color: white;
+            border-color: var(--color-azul-cielo);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+    </style>
+{% endblock %}
