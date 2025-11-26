@@ -4,34 +4,47 @@
 
 {% block content %}
     <div class="page-container">
-        <h1 class="section-title">PRODUCTOS EN ANTIBIÓTICOS</h1>
-        <p class="description-label">Encuentra tratamientos recetados y de venta libre.</p>
+        <h1 class="section-title">ANTIBIÓTICOS</h1>
+        <p class="description-label">Medicamentos especializados bajo prescripción médica.</p>
 
-        <div class="products-grid">
-            {% for prod in productos_antibioticos %}
-            <div class="product-card" style="width: 280px; height: 360px;">
-                <div class="product-card-image">
-                    {{ prod.imagen_placeholder }}
-                </div>
-                <h3>{{ prod.nombre }}</h3>
-                <p class="price">${{ prod.precio }}</p>
-
-                <form action="{{ url_for('add_to_cart', product_id=prod.id) }}" method="POST"
-                      style="display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 10px;">
-
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <label style="font-size: 13px; color: #666;">Cantidad:</label>
-                        <input type="number" name="quantity" value="1" min="1" max="20"
-                               style="width: 50px; padding: 5px; border-radius: 5px; border: 1px solid #ccc; text-align: center;">
-                    </div>
-
-                    <button type="submit" class="btn-add" style="width: 100%; cursor: pointer;">
-                        Añadir al carrito
-                    </button>
-                </form>
-
-            </div>
-            {% endfor %}
+        <div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 40px;">
+            <a href="{{ url_for('antibioticos_page') }}" class="filter-btn {% if not filtro_actual %}active{% endif %}">Todo</a>
+            <a href="{{ url_for('antibioticos_page', filtro='penicilinas') }}" class="filter-btn {% if filtro_actual == 'penicilinas' %}active{% endif %}">💊 Penicilinas</a>
+            <a href="{{ url_for('antibioticos_page', filtro='macrolidos') }}" class="filter-btn {% if filtro_actual == 'macrolidos' %}active{% endif %}">🧪 Macrólidos</a>
+            <a href="{{ url_for('antibioticos_page', filtro='respiratorio') }}" class="filter-btn {% if filtro_actual == 'respiratorio' %}active{% endif %}">🫁 Respiratorio</a>
+            <a href="{{ url_for('antibioticos_page', filtro='estomacal') }}" class="filter-btn {% if filtro_actual == 'estomacal' %}active{% endif %}">🦠 Estomacal</a>
         </div>
+
+        {% if productos %}
+            <div class="products-grid">
+                {% for prod in productos %}
+                <div class="product-card" style="width: 280px; height: 360px;">
+                    <div class="product-card-image">{{ prod.imagen_placeholder }}</div>
+                    <h3>{{ prod.nombre }}</h3>
+                    <p class="price">${{ prod.precio }}</p>
+                    <form action="{{ url_for('add_to_cart', product_id=prod.id) }}" method="POST"
+                          style="display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 10px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <label style="font-size: 13px; color: #666;">Cant:</label>
+                            <input type="number" name="quantity" value="1" min="1" max="20"
+                                   style="width: 50px; padding: 5px; border-radius: 5px; border: 1px solid #ccc; text-align: center;">
+                        </div>
+                        <button type="submit" class="btn-add" style="width: 100%; cursor: pointer;">Añadir al carrito</button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div style="padding: 50px; text-align: center; color: #666;">
+                <p>No se encontraron productos en esta categoría.</p>
+                <a href="{{ url_for('antibioticos_page') }}" style="color: var(--color-rojo-coral); font-weight: bold;">Ver todo</a>
+            </div>
+        {% endif %}
     </div>
+
+    <style>
+        .filter-btn { padding: 10px 20px; border-radius: 20px; text-decoration: none; color: var(--color-azul-oscuro); background-color: var(--color-gris-calido); border: 1px solid #ddd; font-weight: bold; font-size: 14px; transition: all 0.3s; }
+        .filter-btn:hover { background-color: #e0e0e0; transform: translateY(-2px); }
+        .filter-btn.active { background-color: var(--color-azul-cielo); color: white; border-color: var(--color-azul-cielo); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    </style>
 {% endblock %}
