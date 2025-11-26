@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block title %}Ayuda y Soporte | Farmacia MedCare{% endblock %}
+
+{% block content %}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <div class="page-container">
+        <h1 class="section-title">CENTRO DE AYUDA</h1>
+        <p class="description-label">Estamos aquí para escucharte y resolver tus dudas.</p>
+
+        <div class="tabs-container">
+            <button class="tab-btn active" onclick="openTab(event, 'Contactanos')">📞 Contáctanos</button>
+            <button class="tab-btn" onclick="openTab(event, 'FAQ')">❓ Preguntas Frecuentes</button>
+            <button class="tab-btn" onclick="openTab(event, 'Mapa')">📍 Localizador</button>
+        </div>
+
+        <div id="Contactanos" class="tab-content" style="display: block;">
+            <div class="form-box">
+                <h3 style="color: var(--color-azul-oscuro);">Envíanos un mensaje</h3>
+                <form action="{{ url_for('enviar_contacto') }}" method="POST">
+                    <label>Nombre Completo:</label>
+                    <input type="text" name="nombre" value="{{ username }}" class="input-field" readonly style="background-color: #f0f0f0;">
+                    
+                    <label>Asunto:</label>
+                    <select name="asunto" class="input-field">
+                        <option>Duda sobre un producto</option>
+                        <option>Problema con mi pedido</option>
+                        <option>Sugerencia</option>
+                        <option>Otro</option>
+                    </select>
+
+                    <label>Mensaje:</label>
+                    <textarea name="mensaje" rows="5" class="input-field" placeholder="Escribe aquí tu consulta..." required></textarea>
+
+                    <button type="submit" class="btn-add" style="width: 100%; margin-top: 10px;">Enviar Mensaje</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="FAQ" class="tab-content" style="display: none;">
+            <div class="faq-container">
+                
+                <details class="faq-item">
+                    <summary>¿Cuánto tiempo tarda en llegar mi pedido?</summary>
+                    <p>Nuestros envíos estándar tardan entre 24 y 48 horas hábiles. Si elegiste envío express, llega el mismo día.</p>
+                </details>
+
+                <details class="faq-item">
+                    <summary>¿Aceptan devoluciones en medicamentos?</summary>
+                    <p>Por seguridad sanitaria, no aceptamos devoluciones en medicamentos, salvo que el producto esté dañado o caducado.</p>
+                </details>
+
+                <details class="faq-item">
+                    <summary>¿Cómo puedo facturar mi compra?</summary>
+                    <p>Al recibir tu correo de confirmación de compra, encontrarás un enlace directo al portal de facturación.</p>
+                </details>
+
+                <details class="faq-item">
+                    <summary>¿Tienen servicio las 24 horas?</summary>
+                    <p>Sí, nuestra tienda en línea funciona 24/7. Las entregas nocturnas tienen un costo adicional.</p>
+                </details>
+
+            </div>
+        </div>
+
+        <div id="Mapa" class="tab-content" style="display: none;">
+            <div style="background-color: #eef; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ccd;">
+                <strong>Nota Escolar:</strong> Este mapa muestra sucursales de <em>Farmacias Guadalajara</em> en Guadalajara, Jalisco, como referencia funcional del localizador.
+            </div>
+            <div id="map" style="height: 450px; width: 100%; border-radius: 12px; z-index: 1;"></div>
+        </div>
+
+    </div>
+
+    <style>
+        .tabs-container {
+            display: flex; justify-content: center; gap: 10px; margin-bottom: 30px; flex-wrap: wrap;
+        }
+        .tab-btn {
+            padding: 12px 25px; background-color: var(--color-gris-calido); border: none;
+            border-radius: 25px; cursor: pointer; font-weight: bold; color: #666; transition: 0.3s;
+        }
+        .tab-btn.active, .tab-btn:hover {
+            background-color: var(--color-azul-oscuro); color: white;
+        }
+        .form-box {
+            max-width: 500px; margin: 0 auto; background: white; padding: 30px;
+            border-radius: 10px; border: 1px solid #ddd; text-align: left;
+        }
+        .input-field {
+            width: 100%; padding: 10px; margin: 5px 0 15px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box;
+        }
+        .faq-item {
+            background-color: white; border: 1px solid #ddd; margin-bottom: 10px;
+            border-radius: 8px; padding: 15px; text-align: left; cursor: pointer;
+        }
+        .faq-item summary { font-weight: bold; color: var(--color-azul-oscuro); }
+        .faq-item p { margin-top: 10px; color: #555; line-height: 1.5; }
+    </style>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script>
+        // --- 1. CONFIGURACIÓN DEL MAPA ---
+        // Coordenadas de Guadalajara Centro
+        var map = L.map('map').setView([20.6767, -103.3475], 13);
+
+        // Capa del mapa (OpenStreetMap - Gratis)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        // --- 2. MARCADORES DE FARMACIAS GUADALAJARA ---
+        var farmacias = [
+            {lat: 20.6736, lon: -103.3440, nombre: "Farmacia Guadalajara - Centro Histórico"},
+            {lat: 20.6800, lon: -103.3500, nombre: "Farmacia Guadalajara - Av. Alcalde"},
+            {lat: 20.6700, lon: -103.3600, nombre: "Farmacia Guadalajara - Av. Vallarta"},
+            {lat: 20.6650, lon: -103.3300, nombre: "Farmacia Guadalajara - Revolución"}
+        ];
+
+        // Crear icono personalizado (Opcional, usa el default azul)
+        farmacias.forEach(function(sucursal) {
+            L.marker([sucursal.lat, sucursal.lon])
+                .addTo(map)
+                .bindPopup("<b>" + sucursal.nombre + "</b><br>Horario: 24 Horas");
+        });
+
+        // --- 3. LÓGICA DE PESTAÑAS ---
+        function openTab(evt, tabName) {
+            var i, tabcontent, tablinks;
+            
+            // Ocultar todo el contenido
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+
+            // Quitar clase active de los botones
+            tablinks = document.getElementsByClassName("tab-btn");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+
+            // Mostrar el tab actual y activar botón
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.className += " active";
+
+            // TRUCO IMPORTANTE PARA EL MAPA:
+            // Leaflet necesita recalcular su tamaño cuando se hace visible
+            if (tabName === 'Mapa') {
+                setTimeout(function(){ map.invalidateSize(); }, 200);
+            }
+        }
+    </script>
+{% endblock %}

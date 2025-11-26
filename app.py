@@ -7,7 +7,9 @@ import re
 
 app = Flask(__name__)
 
-# --- CONFIGURACIÓN ---
+# ----------------------------------------
+# 1. CONFIGURACIÓN
+# ----------------------------------------
 DATABASE_URI = os.environ.get('DATABASE_URL', 'sqlite:///farmacia.db')
 if DATABASE_URI.startswith("postgres://"):
     DATABASE_URI = DATABASE_URI.replace("postgres://", "postgresql://", 1)
@@ -18,7 +20,9 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'clave_local_de_prueba')
 db = SQLAlchemy(app)
 
 
-# --- MODELO USER ---
+# ----------------------------------------
+# 2. MODELO DE USUARIO
+# ----------------------------------------
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
@@ -38,7 +42,9 @@ class User(db.Model):
 with app.app_context():
     db.create_all()
 
-# --- DATOS ESTÁTICOS ---
+# ----------------------------------------
+# 3. DATOS ESTÁTICOS
+# ----------------------------------------
 COLOR_VERDE_MENTA = "#A1E8D5"
 COLOR_AZUL_CIELO = "#87CEFA"
 COLOR_GRIS_CALIDO = "#F0F0F0"
@@ -57,7 +63,9 @@ COLORES = {
 
 CATEGORIAS_MENU = ["Salud", "Bebés", "Vitaminas y Suplementos", "Ayuda"]
 
-# --- BASE DE DATOS DE PRODUCTOS ---
+# ----------------------------------------
+# 4. BASE DE DATOS DE PRODUCTOS
+# ----------------------------------------
 PRODUCTOS_DB = {
     # --- DESTACADOS ---
     'p1': {"id": "p1", "nombre": "Analgésico", "precio": 99.00, "imagen_placeholder": "Analgesico"},
@@ -65,8 +73,7 @@ PRODUCTOS_DB = {
     'p3': {"id": "p3", "nombre": "Protector Solar", "precio": 150.00, "imagen_placeholder": "ProtectorSolar"},
     'p4': {"id": "p4", "nombre": "Vitamina C", "precio": 120.00, "imagen_placeholder": "VitaminaC"},
 
-    # --- ANTIBIÓTICOS (Actualizado con Subcategorías) ---
-    # Subcats: 'penicilinas', 'macrolidos', 'respiratorio', 'estomacal'
+    # --- ANTIBIÓTICOS (Con Subcategorías) ---
     'a1': {"id": "a1", "nombre": "Amoxicilina 500mg", "precio": 85.00, "imagen_placeholder": "Amoxicilina",
            "subcategoria": "penicilinas"},
     'a2': {"id": "a2", "nombre": "Azitromicina 3 Tabs", "precio": 130.00, "imagen_placeholder": "Azitromicina",
@@ -84,8 +91,7 @@ PRODUCTOS_DB = {
     'a8': {"id": "a8", "nombre": "Ciprofloxacino", "precio": 95.00, "imagen_placeholder": "Ciprofloxacino",
            "subcategoria": "estomacal"},
 
-    # --- SALUD E HIGIENE (Actualizado con Subcategorías) ---
-    # Subcats: 'equipo', 'auxilios', 'higiene', 'ortopedia'
+    # --- SALUD E HIGIENE (Con Subcategorías) ---
     's1': {"id": "s1", "nombre": "Cubrebocas KN95 (Paq. 10)", "precio": 150.00, "imagen_placeholder": "Cubrebocas",
            "subcategoria": "higiene"},
     's2': {"id": "s2", "nombre": "Gel Antibacterial 1L", "precio": 85.00, "imagen_placeholder": "GelAnti",
@@ -107,7 +113,7 @@ PRODUCTOS_DB = {
     's10': {"id": "s10", "nombre": "Muletas de Aluminio", "precio": 450.00, "imagen_placeholder": "Muletas",
             "subcategoria": "ortopedia"},
 
-    # --- BEBÉS ---
+    # --- BEBÉS (Con Subcategorías) ---
     'b1': {"id": "b1", "nombre": "Fórmula NAN 1 (800g)", "precio": 450.00, "imagen_placeholder": "Nan1",
            "subcategoria": "formulas"},
     'b2': {"id": "b2", "nombre": "Enfamil Confort", "precio": 520.00, "imagen_placeholder": "Enfamil",
@@ -125,7 +131,7 @@ PRODUCTOS_DB = {
     'b8': {"id": "b8", "nombre": "Cereal Infantil Nestum", "precio": 45.00, "imagen_placeholder": "Cereal",
            "subcategoria": "alimentos"},
 
-    # --- VITAMINAS Y SUPLEMENTOS ---
+    # --- VITAMINAS Y SUPLEMENTOS (Con Subcategorías) ---
     'v1': {"id": "v1", "nombre": "Centrum Performance", "precio": 280.00, "imagen_placeholder": "Centrum",
            "subcategoria": "multi"},
     'v2': {"id": "v2", "nombre": "Redoxon Vitamina C", "precio": 110.00, "imagen_placeholder": "Redoxon",
@@ -156,8 +162,6 @@ CATEGORIAS_EXTENDIDAS = [
     ("Higiene Personal", "🧼", "Jabones, champús y desodorantes."),
 ]
 
-AYUDA_DATA = ["Contáctanos", "Preguntas Frecuentes", "Localizador de SuperFarmacias"]
-
 
 # --- SEGURIDAD ---
 def login_required(f):
@@ -176,7 +180,7 @@ def inject_user():
     return dict(logged_in=session.get('logged_in'), username=session.get('username'))
 
 
-# --- RUTAS AUTH ---
+# --- RUTAS DE AUTENTICACIÓN ---
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -309,6 +313,23 @@ def vitaminas_page():
                            filtro_actual=filtro_actual, colores=COLORES)
 
 
+# --- CATEGORÍA: AYUDA (Con Mapa y Contacto) ---
+@app.route('/pagina/Ayuda')
+@login_required
+def ayuda_page():
+    return render_template('ayuda.html', categorias=CATEGORIAS_MENU, colores=COLORES)
+
+
+@app.route('/enviar_contacto', methods=['POST'])
+@login_required
+def enviar_contacto():
+    # Aquí recibiríamos request.form.get('mensaje')
+    # Simulamos el envío exitoso
+    flash("¡Gracias por contactarnos! Hemos recibido tu mensaje y te responderemos pronto.", "success")
+    return redirect(url_for('ayuda_page'))
+
+
+# --- CARRITO ---
 @app.route('/pagina/Carrito')
 @login_required
 def carrito_page():
@@ -333,10 +354,11 @@ def carrito_page():
                                     "item_count": item_count}, colores=COLORES)
 
 
+# --- RUTA GENÉRICA (Fallback) ---
 @app.route('/pagina/<page_name>')
 @login_required
 def show_page(page_name):
-    page_map = {"Ayuda": {"data": AYUDA_DATA, "title": "Ayuda"}}
+    # Redirecciones explícitas
     if page_name == "Antibioticos":
         return antibioticos_page()
     elif page_name == "Salud":
@@ -345,13 +367,11 @@ def show_page(page_name):
         return bebes_page()
     elif page_name == "VitaminasySuplementos":
         return vitaminas_page()
+    elif page_name == "Ayuda":
+        return ayuda_page()
     elif page_name == "Carrito":
         return carrito_page()
 
-    if page_name in page_map:
-        return render_template('categoria_generica.html', categorias=CATEGORIAS_MENU,
-                               page_title=page_map[page_name]["title"], sub_categories=page_map[page_name]["data"],
-                               colores=COLORES)
     return render_template('pagina_generica.html', page_name=page_name, colores=COLORES)
 
 
